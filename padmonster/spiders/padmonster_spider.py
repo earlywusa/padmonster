@@ -66,7 +66,7 @@ class PadMonster(scrapy.spiders.Spider):
             if len(active_skill_min_cd) > 0:
                 active_skill_min_cd_int = int(active_skill_min_cd[0])
                 # print(active_skill_min_cd_int)
-                item["active_skill_name"] = active_skill_min_cd_int
+                item["active_skill_min_cd"] = active_skill_min_cd_int
             active_skill_description = monster.xpath('tr[2]/td').extract()
             if len(active_skill_description) > 0:
                 # print(active_skill_description[0])
