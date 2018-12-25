@@ -1,10 +1,10 @@
 Jobless Studio First Project~~
 
-# padmonster_crawler
+- padmonster_crawler
 simple testing crawl tool for pad monsters
 
-#DataStructure
+- DataStructure
 define basic schema for the monsters
 
-#app
+- app
 server
