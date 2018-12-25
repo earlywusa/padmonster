@@ -1,2 +1,3 @@
 .scrapy/httpcache/
+padmonster_crawler/spiders/__pycache__/
 padmonster/spiders/__pycache__/

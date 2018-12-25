@@ -2,7 +2,7 @@ import scrapy
 from scrapy.http import Request
 from scrapy.selector import Selector
 from urllib.parse import urljoin
-from padmonster_crawler.items import PadmonsterItem
+from padmonster.items import PadmonsterItem
 
 class PadMonster(scrapy.spiders.Spider):
     """docstring for RecruitSpider."""
