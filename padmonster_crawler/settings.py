@@ -11,8 +11,8 @@
 
 BOT_NAME = 'padmonster'
 
-SPIDER_MODULES = ['padmonster.spiders']
-NEWSPIDER_MODULE = 'padmonster.spiders'
+SPIDER_MODULES = ['padmonster_crawler.spiders']
+NEWSPIDER_MODULE = 'padmonster_crawler.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
