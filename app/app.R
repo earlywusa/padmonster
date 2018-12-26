@@ -7,7 +7,6 @@ ui <- fluidPage (
 
   h2("PAD Monsters"),
   wellPanel(
-    h3("Filters"),
     prettyRadioButtons(
       inputId = "selectMainAtt",
       label = "Main Attribute",
@@ -24,7 +23,7 @@ ui <- fluidPage (
     ),
     prettyCheckboxGroup(
       inputId = "selectType",
-      label = "Type",
+      label = "Types",
       choices = c("God", "Devil", "Dragon", "Balance", "Physical", "Killer", "Healer",
         "Machine", "Evolve", "Enhance", "Awoken", "Vendor"),
       inline = T,
@@ -49,6 +48,22 @@ ui <- fluidPage (
       label = "",
       choices = "",
       individual = T
+    ),
+    div(
+      style = "display: flex; flex-wrap: wrap",
+      actionButton(
+        inputId = "submitFilters",
+        label = "Filter",
+        icon = icon("filter"),
+        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+      ),
+      div(
+        style = "padding-left: 10px",
+        actionButton(
+          inputId = "resetFilters",
+          label = "Reset"
+        )
+      )
     )
   )
 
