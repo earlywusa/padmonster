@@ -15,15 +15,15 @@ iconpath.dt <- data.table(iconpath)
 
 awokenskill.dt <- cbind(awokenskillname.dt, iconpath.dt)
 awokenskill.dt <- awokenskill.dt[-1,]
-awokenskill.dt[ , AwokenSkillID := 1:nrow(awokenskill.dt)]
-setnames(awokenskill.dt,"awokenskillname", "AwokenSkill")
+awokenskill.dt[ , AwokenSkillId := 1:nrow(awokenskill.dt)]
+setnames(awokenskill.dt,"awokenskillname", "AwokenSkillName")
 setnames(awokenskill.dt,"iconpath", "AwokenSkillIconDownload")
 
-for(i in 1:length(awokenskill.dt$AwokenSkillIconDownload)){
-download.file(paste0(awokenskill.dt$AwokenSkillIconDownload[i]),paste0(awokenskill.dt[i,AwokenSkillID], ".png"))
-}
+#for(i in 1:length(awokenskill.dt$AwokenSkillIconDownload)){
+#download.file(paste0(awokenskill.dt$AwokenSkillIconDownload[i]),paste0(awokenskill.dt[i,AwokenSkillId], ".png"))
+#}
 
-awokenskill.dt[ ,AwokenSkillIconPath := paste0("img/AwokenSkill/", AwokenSkillID,".png")]
+awokenskill.dt[ ,AwokenSkillIconPath := paste0("img/AwokenSkill/", AwokenSkillId,".png")]
 
 fwrite(awokenskill.dt, file = "//Users/yawenliang/Documents/PadMonster/db/AwokenSkill.csv")
 
