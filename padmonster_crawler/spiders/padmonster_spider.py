@@ -93,28 +93,12 @@ class PadMonster(scrapy.spiders.Spider):
                 item["leader_skill_description"] = leader_skill_description[0]
         print("^^^^^^^^^")
         yield item
-        # print(monsters[1])
-        # for eachMovie in Movies:
-        #     title = eachMovie.xpath('div[@class="hd"]/a/span/text()').extract()
-        #     fullTitle = "".join(title)
-        #     movieInfo = eachMovie.xpath('div[@class="bd"]/p/text()').extract()
-        #     star = eachMovie.xpath('div[@class="bd"]/div[@class="star"]/span/text()').extract()
-        #     quote = eachMovie.xpath('div[@class="bd"]/p[@class="quote"]/span/text()').extract()
-        #     if quote:
-        #         quote = quote[0]
-        #     else:
-        #         quote = ''
-        #     item['title'] = fullTitle
-        #     item['movieInfo'] = ';'.join(movieInfo)
-        #     item['star'] = star
-        #     item['quote'] = quote
-        #     yield item
-        # nextLink = selector.xpath('//span[@class="next"]/link/@href').extract()
         print("---------------")
         index = response.url.split("/")[-1]
         if type(index) == str:
             index = int(index)
         count = index+500
+        count = 4835
 
         if count < 4836:
             nextLink = "http://pad.skyozora.com/pets/" + str(count)
