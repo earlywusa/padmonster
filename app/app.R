@@ -89,15 +89,6 @@ server <- function(input, output, session) {
     choices
   }
 
-  initSelectAwokenSkills <- function() {
-    updateCheckboxGroupButtons(
-      session = session,
-      inputId = "selectAwokenSkills",
-      choices = getAwokenSkillChoices(AwokenSkill.dt),
-      selected = NULL
-    )
-  }
-
   clearSelectedAwokenSkills <- function() {
     selectedAwokenSkills(NULL)
 
@@ -106,7 +97,11 @@ server <- function(input, output, session) {
     )
   }
 
-  initSelectAwokenSkills()
+  updateCheckboxGroupButtons(
+    session = session,
+    inputId = "selectAwokenSkills",
+    choices = getAwokenSkillChoices(AwokenSkill.dt)
+  )
 
   selectedAwokenSkills <- reactiveVal(NULL)
 
@@ -123,7 +118,11 @@ server <- function(input, output, session) {
       selectedAwokenSkills()
     )
 
-    initSelectAwokenSkills()
+    updateCheckboxGroupButtons(
+      session = session,
+      inputId = "selectAwokenSkills",
+      selected = character(0)
+    )
 
   }, ignoreNULL = T, ignoreInit = T
   )
