@@ -10,12 +10,14 @@ import scrapy
 
 class PadmonsterItem(scrapy.Item):
     # define the fields for your item here like:
+    monster_id = scrapy.Field()
     name = scrapy.Field()
     rarity = scrapy.Field()
-    attrs = scrapy.Field()
+    main_attr = scrapy.Field()
+    sub_attr = scrapy.Field()
     types = scrapy.Field()
     hp_lv_max = scrapy.Field()
-    att_lv_max = scrapy.Field()
+    atk_lv_max = scrapy.Field()
     rec_lv_max = scrapy.Field()
     active_skill_name = scrapy.Field()
     active_skill_init_cd = scrapy.Field()

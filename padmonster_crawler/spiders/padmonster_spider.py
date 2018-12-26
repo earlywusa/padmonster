@@ -12,7 +12,11 @@ class PadMonster(scrapy.spiders.Spider):
     start_urls = ["http://pad.skyozora.com/pets/1"]
     count = 1
     def parse(self, response):
+        index = response.url.split("/")[-1]
+        if type(index) == str:
+            index = int(index)
         item = PadmonsterItem()
+        item["monster_id"] = index
         selector = Selector(response)
         monsters_table = selector.xpath('//table[@border="0" and @cellpadding="10" and @cellspacing="1" and @width="720" and @align="center"]')
         # monsters = selector.xpath('//table[@border="0" and @cellpadding="5"]')
@@ -35,7 +39,11 @@ class PadMonster(scrapy.spiders.Spider):
             attrs = monster.xpath('tr/td[2]/a/@title').extract()
             if len(attrs) > 0:
                 # print(attrs)
-                item['attrs'] = attrs
+                item['main_attr'] = attrs[0]
+            if len(attrs) > 1:
+                item["sub_attr"] = attrs[1]
+            else:
+                item["sub_attr"] = ""
             types = monster.xpath('tr/td[3]/a/@title').extract()
             if len(types) > 0:
                 # print(types)
@@ -46,10 +54,10 @@ class PadMonster(scrapy.spiders.Spider):
             if len(lv_max_status) > 0:
                 # print(lv_max_status)
                 hp_lv_max = lv_max_status[1].split(": ")[1]
-                att_lv_max = lv_max_status[2].split(": ")[1]
+                atk_lv_max = lv_max_status[2].split(": ")[1]
                 rec_lv_max = lv_max_status[3].split(": ")[1]
                 item["hp_lv_max"] = hp_lv_max
-                item["att_lv_max"] = att_lv_max
+                item["atk_lv_max"] = atk_lv_max
                 item["rec_lv_max"] = rec_lv_max
         if monsters_table[3] != None:
             monster = monsters_table[3]
@@ -94,9 +102,7 @@ class PadMonster(scrapy.spiders.Spider):
         print("^^^^^^^^^")
         yield item
         print("---------------")
-        index = response.url.split("/")[-1]
-        if type(index) == str:
-            index = int(index)
+
         count = index+500
         count = 4835
 
