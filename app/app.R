@@ -1,12 +1,15 @@
 library(data.table)
 library(shiny)
+library(shinyjs)
 library(shinyWidgets)
 
 
 ui <- fluidPage (
+  useShinyjs(),
 
   h2("PAD Monsters"),
   wellPanel(
+    id = "filters",
     prettyRadioButtons(
       inputId = "selectMainAtt",
       label = "Main Attribute",
@@ -71,17 +74,11 @@ ui <- fluidPage (
 
 server <- function(input, output, session) {
 
+  addResourcePath("img", "img")
+
   AwokenSkill.dt <- data.table(
-    AwokenSkill = c(
-      "Enhance HP",
-      "Enhance ATK",
-      "Enhance RCV"
-    ),
-    AwokenSkillIconPath = c(
-      "http://www.puzzledragonx.com/en/img/awoken/3.png",
-      "http://www.puzzledragonx.com/en/img/awoken/4.png",
-      "http://www.puzzledragonx.com/en/img/awoken/5.png"
-    )
+    AwokenSkill = 1:64,
+    AwokenSkillIconPath = paste0("img/AwokenSkill/", 1:64, ".png")
   )
 
   AwokenSkill.dt[, LinkHtml := paste0("<img src=", AwokenSkillIconPath, ">")]
@@ -98,6 +95,14 @@ server <- function(input, output, session) {
       inputId = "selectAwokenSkills",
       choices = getAwokenSkillChoices(AwokenSkill.dt),
       selected = NULL
+    )
+  }
+
+  clearSelectedAwokenSkills <- function() {
+    selectedAwokenSkills(NULL)
+
+    output$selectedAwokenSkills <- renderUI(
+      selectedAwokenSkills()
     )
   }
 
@@ -125,11 +130,16 @@ server <- function(input, output, session) {
 
   observeEvent(input$clearSelectedAwokenSkills, {
 
-    selectedAwokenSkills(NULL)
+    clearSelectedAwokenSkills()
 
-    output$selectedAwokenSkills <- renderUI(
-      selectedAwokenSkills()
-    )
+  })
+
+
+  observeEvent(input$resetFilters, {
+
+    shinyjs::reset("filters")
+
+    clearSelectedAwokenSkills()
 
   })
 
