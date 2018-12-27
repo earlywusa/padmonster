@@ -34,9 +34,12 @@ ui <- fluidPage (
     ),
     tags$b("Awoken Skills"),
     div(
-      style = "display: flex; flex-wrap: wrap",
-      uiOutput(
-        outputId = "selectedAwokenSkills"
+      style = "display:flex; flex-wrap:wrap; padding-top:5px;",
+      div(
+        style = "background-color:gray;",
+        uiOutput(
+          outputId = "selectedAwokenSkills"
+        )
       ),
       div(
         style = "padding-left:10px",
@@ -53,7 +56,24 @@ ui <- fluidPage (
       individual = T
     ),
     div(
-      style = "display: flex; flex-wrap: wrap",
+      style = "display:flex; flex-wrap:wrap; padding-top:5px;",
+      pickerInput(
+        inputId = "pickSuperAS",
+        label = "Super Awoken Skills",
+        choices = "",
+        options = pickerOptions(noneSelectedText = "None"),
+        width = "fit"
+      ),
+      div(
+        style = "align-self:center; padding-top:10px;",
+        actionButton(
+          inputId = "clearSuperAS",
+          label = "clear"
+        )
+      )
+    ),
+    div(
+      style = "display: flex; flex-wrap: wrap; padding-top:10px",
       actionButton(
         inputId = "submitFilters",
         label = "Filter",
@@ -103,6 +123,16 @@ server <- function(input, output, session) {
     choices = getAwokenSkillChoices(AwokenSkill.dt)
   )
 
+  updatePickerInput(
+    session = session,
+    inputId = "pickSuperAS",
+    choices = AwokenSkill.dt$AwokenSkill,
+    choicesOpt = list(
+      content = sprintf(AwokenSkill.dt$LinkHtml)
+    ),
+    selected = character(0)
+  )
+
   selectedAwokenSkills <- reactiveVal(NULL)
 
   observeEvent(input$selectAwokenSkills, {
@@ -130,6 +160,12 @@ server <- function(input, output, session) {
   observeEvent(input$clearSelectedAwokenSkills, {
 
     clearSelectedAwokenSkills()
+
+  })
+
+  observeEvent(input$clearSuperAS, {
+
+    shinyjs::reset("pickSuperAS")
 
   })
 
