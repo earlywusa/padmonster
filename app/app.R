@@ -2,6 +2,8 @@ library(data.table)
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
+library(DBI)
+library(RSQLite)
 
 
 ui <- fluidPage (
@@ -94,17 +96,16 @@ ui <- fluidPage (
 
 server <- function(input, output, session) {
 
+  con <- dbConnect(SQLite(), "db.sqlite3")
+
   addResourcePath("img", "img")
 
-  AwokenSkill.dt <- data.table(
-    AwokenSkill = 1:64,
-    AwokenSkillIconPath = paste0("img/AwokenSkill/", 1:64, ".png")
-  )
+  AwokenSkill.dt <- setDT(dbReadTable(con, "AwokenSkill"))
 
   AwokenSkill.dt[, LinkHtml := paste0("<img src=", AwokenSkillIconPath, ">")]
 
   getAwokenSkillChoices <- function(AwokenSkill.dt) {
-    choices <- AwokenSkill.dt$AwokenSkill
+    choices <- AwokenSkill.dt$AwokenSkillId
     names(choices) <- AwokenSkill.dt$LinkHtml
     choices
   }
@@ -126,7 +127,7 @@ server <- function(input, output, session) {
   updatePickerInput(
     session = session,
     inputId = "pickSuperAS",
-    choices = AwokenSkill.dt$AwokenSkill,
+    choices = AwokenSkill.dt$AwokenSkillId,
     choicesOpt = list(
       content = sprintf(AwokenSkill.dt$LinkHtml)
     ),
@@ -140,7 +141,7 @@ server <- function(input, output, session) {
     selectedAwokenSkills(
       tagList(
         selectedAwokenSkills(),
-        tags$img(src = AwokenSkill.dt[AwokenSkill == input$selectAwokenSkills, AwokenSkillIconPath])
+        tags$img(src = AwokenSkill.dt[AwokenSkillId == input$selectAwokenSkills, AwokenSkillIconPath])
       )
     )
 
@@ -178,6 +179,7 @@ server <- function(input, output, session) {
 
   })
 
+  dbDisconnect(con)
 
 }
 
