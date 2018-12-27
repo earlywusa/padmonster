@@ -167,7 +167,11 @@ server <- function(input, output, session) {
   updateCheckboxGroupButtons(
     session = session,
     inputId = "selectTypes",
-    choices = getTypeChoices(Type.dt)
+    choices = getTypeChoices(Type.dt),
+    checkIcon = list(yes = tags$i(class = "fa fa-check-square",
+                                  style = "color: steelblue"),
+                                  no = tags$i(class = "fa fa-square-o",
+                                  style = "color: steelblue"))
   )
 
   updateCheckboxGroupButtons(
