@@ -34,6 +34,7 @@ ui <- fluidPage (
       inline = T,
       status = "primary"
     ),
+
     tags$b("Awoken Skills"),
     div(
       style = "display:flex; flex-wrap:wrap; padding-top:5px;",
@@ -57,11 +58,12 @@ ui <- fluidPage (
       choices = "",
       individual = T
     ),
+
     div(
       style = "display:flex; flex-wrap:wrap; padding-top:5px;",
       pickerInput(
         inputId = "pickSuperAS",
-        label = "Super Awoken Skills",
+        label = "Super Awoken Skill",
         choices = "",
         options = pickerOptions(noneSelectedText = "None"),
         width = "fit"
@@ -74,6 +76,13 @@ ui <- fluidPage (
         )
       )
     ),
+
+    prettyCheckboxGroup(
+      inputId = "selectActiveSkillTypes",
+      label = "Active Skill Types",
+      choices = ""
+    ),
+
     div(
       style = "display: flex; flex-wrap: wrap; padding-top:10px",
       actionButton(
@@ -101,8 +110,15 @@ server <- function(input, output, session) {
   addResourcePath("img", "img")
 
   AwokenSkill.dt <- setDT(dbReadTable(con, "AwokenSkill"))
-
   AwokenSkill.dt[, LinkHtml := paste0("<img src=", AwokenSkillIconPath, ">")]
+
+  ActiveSkill.dt <- data.table(ActiveSkillType = c(
+    "解绑","解觉醒无效","解锁珠",
+    "破防","破大伤吸收","破属性吸收",
+    "加combo","延长转珠时间",
+    "增伤",
+    "单体固伤","全体固伤")
+  )
 
   getAwokenSkillChoices <- function(AwokenSkill.dt) {
     choices <- AwokenSkill.dt$AwokenSkillId
@@ -132,6 +148,13 @@ server <- function(input, output, session) {
       content = sprintf(AwokenSkill.dt$LinkHtml)
     ),
     selected = character(0)
+  )
+
+  updatePrettyCheckboxGroup(
+    session = session,
+    inputId = "selectActiveSkillTypes",
+    choices = ActiveSkill.dt$ActiveSkillType,
+    inline = T
   )
 
   selectedAwokenSkills <- reactiveVal(NULL)
