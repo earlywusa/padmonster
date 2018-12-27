@@ -97,7 +97,11 @@ ui <- fluidPage (
   ),
 
   uiOutput(
-    outputId = "monFil"
+    outputId = "monFlt"
+  ),
+
+  uiOutput(
+    outputId = "monSelData"
   )
 
 )
@@ -284,6 +288,8 @@ server <- function(input, output, session) {
     paste0(paste0(formatC(AwokenSkillId, width=2, flag="0"), ";"), collapse = ""),
     by = MonsterId]
 
+  monFlt <- reactiveValues(Id = NULL, Name = NULL)
+
   observeEvent(input$submitFilters, {
 
     if (input$selectMainAtt == "Any") {
@@ -310,27 +316,36 @@ server <- function(input, output, session) {
       monIdFltByAwkSkl <- awkSklRelCat.dt[grepl(awkSklSel, V1), MonsterId]
     }
 
-    monIdFlt <- Reduce(intersect, list(
+    monFlt$Id <- Reduce(intersect, list(
       monIdFltByMainAtt,
       monIdFltBySubAtt,
       monIdFltByAwkSkl
     ))
 
-    monFil <- Monster.dt[MonsterId %in% monIdFlt, Name]
+    monFlt$Name <- Monster.dt[MonsterId %in% monFlt$Id, Name]
 
-    output$monFil <- renderUI(
-      if (length(monFil)==0) {
+    output$monFlt <- renderUI(
+      if (length(monFlt$Name)==0) {
         NULL
       } else {
         radioGroupButtons(
-          inputId = "monFil",
+          inputId = "monFlt",
           label = "",
-          choices = monFil,
+          choices = monFlt$Name,
           selected = character(0)
         )
       }
     )
 
+  })
+
+
+  observeEvent(input$monFlt, {
+    output$monSelData <- renderTable(
+      cbind(colnames(Monster.dt), transpose(Monster.dt[Name == input$monFlt])),
+      colnames = F,
+      bordered = T
+    )
   })
 
 
