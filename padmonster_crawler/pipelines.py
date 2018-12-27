@@ -13,6 +13,13 @@ class PadmonsterPipeline(object):
             print("initialize connection")
             # self.conn = sqlite3.connect('db/padmonster.sqlite3')
             self.conn = sqlite3.connect("/Users/erlisuo/practice/padguide/spider/padmonster/db/padmonster.sqlite3")
+            self.awokenSkillDic = {}
+            sql = "select AwokenSkillName, AwokenSkillId from AwokenSkill;"
+            awokenSkills = self.query(sql)
+            for pair in awokenSkills:
+                # print(pair)
+                self.awokenSkillDic[pair[0]] = pair[1]
+            # print(awokenSkills)
         except Error as e:
             print("error message: " + e)
         # finally:
@@ -49,25 +56,29 @@ class PadmonsterPipeline(object):
                 print("found Monster")
             else:
                 print("Cannot find monster, insert")
+                awokenSkills = item["awaken_skills"]
+                position = 0
+                for skill in awokenSkills:
+                    activeSkillId = self.awokenSkillDic[skill]
+                    # sql = "select Id from AwokenSkillRelation where MonsterId = " +item["monster_id"] + " and AwokenSkillId = " + item[activeSkillId]
+                    # existingId = self.query(sql)
+                    # if existingId != None :
+                    sql = "insert into AwokenSkillRelation (MonsterId, AwokenSkillId, Position) \
+                    values (?,?,?);"
+                    obj = (item["monster_id"], activeSkillId, position)
+                    id = self.insert(sql, obj)
+                    position = position + 1
+
+
                 sql = "insert into Monster \
                 (MonsterId, Name, MainAtt, SubAtt, LvMax, \
-                Hp, Atk, Rec, HpInc, AtkInc, \
-                RecInc, ActiveSkillId, LeaderSkillId, MonsterIconPath) \
+                Hp, Atk, Rec, Hp110, Atk110, \
+                Rec110, ActiveSkillId, LeaderSkillId, MonsterIconPath) \
                 values (?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-                obj = (item["monster_id"], item["name"], item["main_attr"], item["sub_attr"], 99, item["hp_lv_max"], item["atk_lv_max"], item["rec_lv_max"], 0, 0, 0, 99, 88, "test path")
+                obj = (item["monster_id"], item["name"], item["main_attr"], item["sub_attr"], 99, item["hp_lv_max"], item["atk_lv_max"], item["rec_lv_max"], item["hp_110"], item["atk_110"], item["rec_110"], None, None, "test path")
                 id = self.insert(sql, obj)
 
-            # sql = "select * from TypeRelation;"
-            # obj = (1, 1)
-            # cur = self.conn.cursor()
-            # cur.execute(sql, obj)
-            # last_id = cur.lastrowid
-            # print("last row id: " + str(last_id))
-            # self.conn.commit()
-            # rows = cur.fetchall()
-            # for row in rows:
-            #     print("message: ")
-            #     print(row)
+
         except Error as e:
             print("error message: ")
             print(e)
