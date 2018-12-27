@@ -14,6 +14,8 @@ webnodes <- html_nodes(webpage, '#property1 label img')
 AttributeIconDownload <- sapply(webnodes, function(x){xml_attr(x,"src")})
 Attribute.dt <- data.table(AttributeIconDownload)
 Attribute.dt[ , Id := 1:nrow(Attribute.dt)]
+
+
 Attribute.dt[ , AttributeName := c("火", "水", "木", "光", "暗")]
 
 for(i in 1:length(Attribute.dt$AttributeIconDownload)){
