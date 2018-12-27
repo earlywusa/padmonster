@@ -12,6 +12,7 @@ ui <- fluidPage (
   h2("PAD Monsters"),
   wellPanel(
     id = "filters",
+
     radioGroupButtons(
       inputId = "selectMainAtt",
       label = "Main Attribute",
@@ -22,13 +23,10 @@ ui <- fluidPage (
       label = "Sub Attribute",
       choices = ""
     ),
-    prettyCheckboxGroup(
-      inputId = "selectType",
+    checkboxGroupButtons(
+      inputId = "selectTypes",
       label = "Types",
-      choices = c("God", "Devil", "Dragon", "Balance", "Physical", "Killer", "Healer",
-        "Machine", "Evolve", "Enhance", "Awoken", "Vendor"),
-      inline = T,
-      status = "primary"
+      choices = ""
     ),
 
     tags$b("Awoken Skills"),
@@ -105,11 +103,15 @@ server <- function(input, output, session) {
 
   addResourcePath("img", "img")
 
+
   Attribute.dt <- setDT(dbReadTable(con, "Attribute"))
   Attribute.dt[, LinkHtml := paste0("<img src=", AttributeIconPath, " height='18' width='18'>")]
 
   AwokenSkill.dt <- setDT(dbReadTable(con, "AwokenSkill"))
   AwokenSkill.dt[, LinkHtml := paste0("<img src=", AwokenSkillIconPath, " height='20' width='20'>")]
+
+  Type.dt <- setDT(dbReadTable(con, "Type"))
+  Type.dt[, LinkHtml := paste0("<img src=", TypeIconPath, " height='20' width='20'>")]
 
   ActiveSkill.dt <- data.table(ActiveSkillType = c(
     "解绑","解觉醒无效","解锁珠",
@@ -119,12 +121,19 @@ server <- function(input, output, session) {
     "单体固伤","全体固伤")
   )
 
+
   getAttributeChoices <- function(Attribute.dt, sub = F) {
     choices <- c("Any", Attribute.dt$AttributeName)
     names(choices) <- c("Any", Attribute.dt$LinkHtml)
     if (sub) {
       choices <- c(choices, "None")
     }
+    choices
+  }
+
+  getTypeChoices <- function(Type.dt) {
+    choices <- Type.dt$TypeId
+    names(choices) <- Type.dt$LinkHtml
     choices
   }
 
@@ -142,6 +151,7 @@ server <- function(input, output, session) {
     )
   }
 
+
   updateRadioGroupButtons(
     session = session,
     inputId = "selectMainAtt",
@@ -152,6 +162,12 @@ server <- function(input, output, session) {
     session = session,
     inputId = "selectSubAtt",
     choices = getAttributeChoices(Attribute.dt, sub = T)
+  )
+
+  updateCheckboxGroupButtons(
+    session = session,
+    inputId = "selectTypes",
+    choices = getTypeChoices(Type.dt)
   )
 
   updateCheckboxGroupButtons(
@@ -179,6 +195,7 @@ server <- function(input, output, session) {
   )
 
   selectedAwokenSkills <- reactiveVal(NULL)
+
 
   observeEvent(input$selectAwokenSkills, {
 
@@ -227,9 +244,28 @@ server <- function(input, output, session) {
 
     shinyjs::reset("filters")
 
+    updateRadioGroupButtons(
+      session = session,
+      inputId = "selectMainAtt",
+      selected = "Any"
+    )
+
+    updateRadioGroupButtons(
+      session = session,
+      inputId = "selectSubAtt",
+      selected = "Any"
+    )
+
+    updateCheckboxGroupButtons(
+      session = session,
+      inputId = "selectTypes",
+      selected = character(0)
+    )
+
     clearSelectedAwokenSkills()
 
   })
+
 
   dbDisconnect(con)
 
