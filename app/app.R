@@ -286,13 +286,37 @@ server <- function(input, output, session) {
 
   observeEvent(input$submitFilters, {
 
-    awkSklSel <- paste0(
-      paste0(formatC(sort(selectedAwokenSkills$Id), width=2, flag="0"), ";"),
-      collapse = "")
+    if (input$selectMainAtt == "Any") {
+      monIdFltByMainAtt <- Monster.dt$MonsterId
+    } else {
+      monIdFltByMainAtt <- Monster.dt[MainAtt == input$selectMainAtt, MonsterId]
+    }
 
-    monIdFltByAwkSkl <- awkSklRelCat.dt[grepl(awkSklSel, V1), MonsterId]
+    if (input$selectSubAtt == "Any") {
+      monIdFltBySubAtt <- Monster.dt$MonsterId
+    } else if (input$selectSubAtt == "None") {
+      monIdFltBySubAtt <- Monster.dt[SubAtt == "", MonsterId]
+    } else {
+      monIdFltBySubAtt <- Monster.dt[SubAtt == input$selectSubAtt, MonsterId]
+    }
 
-    monFil <- Monster.dt[MonsterId %in% monIdFltByAwkSkl, Name]
+    if (is.null(selectedAwokenSkills$Id)) {
+      monIdFltByAwkSkl <- Monster.dt$MonsterId
+    } else {
+      awkSklSel <- paste0(
+        paste0(formatC(sort(selectedAwokenSkills$Id), width=2, flag="0"), ";"),
+        collapse = "")
+
+      monIdFltByAwkSkl <- awkSklRelCat.dt[grepl(awkSklSel, V1), MonsterId]
+    }
+
+    monIdFlt <- Reduce(intersect, list(
+      monIdFltByMainAtt,
+      monIdFltBySubAtt,
+      monIdFltByAwkSkl
+    ))
+
+    monFil <- Monster.dt[MonsterId %in% monIdFlt, Name]
 
     output$monFil <- renderUI(
       if (length(monFil)==0) {
