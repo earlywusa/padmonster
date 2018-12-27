@@ -12,19 +12,15 @@ ui <- fluidPage (
   h2("PAD Monsters"),
   wellPanel(
     id = "filters",
-    prettyRadioButtons(
+    radioGroupButtons(
       inputId = "selectMainAtt",
       label = "Main Attribute",
-      choices = c("Fire", "Water", "Wood", "Light", "Dark", "Any"),
-      selected = "Any",
-      inline = T
+      choices = ""
     ),
-    prettyRadioButtons(
+    radioGroupButtons(
       inputId = "selectSubAtt",
       label = "Sub Attribute",
-      choices = c("Fire", "Water", "Wood", "Light", "Dark", "Null", "Any"),
-      selected = "Any",
-      inline = T
+      choices = ""
     ),
     prettyCheckboxGroup(
       inputId = "selectType",
@@ -39,13 +35,13 @@ ui <- fluidPage (
     div(
       style = "display:flex; flex-wrap:wrap; padding-top:5px;",
       div(
-        style = "background-color:gray;",
+        style = "align-self:center;",
         uiOutput(
           outputId = "selectedAwokenSkills"
         )
       ),
       div(
-        style = "padding-left:10px",
+        style = "padding-left:10px;",
         actionButton(
           inputId = "clearSelectedAwokenSkills",
           label = "clear"
@@ -105,12 +101,15 @@ ui <- fluidPage (
 
 server <- function(input, output, session) {
 
-  con <- dbConnect(SQLite(), "db.sqlite3")
+  con <- dbConnect(SQLite(), "padmonster.sqlite3")
 
   addResourcePath("img", "img")
 
+  Attribute.dt <- setDT(dbReadTable(con, "Attribute"))
+  Attribute.dt[, LinkHtml := paste0("<img src=", AttributeIconPath, " height='18' width='18'>")]
+
   AwokenSkill.dt <- setDT(dbReadTable(con, "AwokenSkill"))
-  AwokenSkill.dt[, LinkHtml := paste0("<img src=", AwokenSkillIconPath, ">")]
+  AwokenSkill.dt[, LinkHtml := paste0("<img src=", AwokenSkillIconPath, " height='20' width='20'>")]
 
   ActiveSkill.dt <- data.table(ActiveSkillType = c(
     "解绑","解觉醒无效","解锁珠",
@@ -119,6 +118,15 @@ server <- function(input, output, session) {
     "增伤",
     "单体固伤","全体固伤")
   )
+
+  getAttributeChoices <- function(Attribute.dt, sub = F) {
+    choices <- c("Any", Attribute.dt$AttributeName)
+    names(choices) <- c("Any", Attribute.dt$LinkHtml)
+    if (sub) {
+      choices <- c(choices, "None")
+    }
+    choices
+  }
 
   getAwokenSkillChoices <- function(AwokenSkill.dt) {
     choices <- AwokenSkill.dt$AwokenSkillId
@@ -134,10 +142,23 @@ server <- function(input, output, session) {
     )
   }
 
+  updateRadioGroupButtons(
+    session = session,
+    inputId = "selectMainAtt",
+    choices = getAttributeChoices(Attribute.dt),
+  )
+
+  updateRadioGroupButtons(
+    session = session,
+    inputId = "selectSubAtt",
+    choices = getAttributeChoices(Attribute.dt, sub = T)
+  )
+
   updateCheckboxGroupButtons(
     session = session,
     inputId = "selectAwokenSkills",
-    choices = getAwokenSkillChoices(AwokenSkill.dt)
+    choices = getAwokenSkillChoices(AwokenSkill.dt),
+    size = "sm"
   )
 
   updatePickerInput(
@@ -164,12 +185,20 @@ server <- function(input, output, session) {
     selectedAwokenSkills(
       tagList(
         selectedAwokenSkills(),
-        tags$img(src = AwokenSkill.dt[AwokenSkillId == input$selectAwokenSkills, AwokenSkillIconPath])
+        tags$img(
+          src = AwokenSkill.dt[AwokenSkillId == input$selectAwokenSkills,
+                               AwokenSkillIconPath],
+          height = "25",
+          width = "25"
+        )
       )
     )
 
     output$selectedAwokenSkills <- renderUI(
-      selectedAwokenSkills()
+      div(
+        style = "background-color:gray;",
+        selectedAwokenSkills()
+      )
     )
 
     updateCheckboxGroupButtons(
