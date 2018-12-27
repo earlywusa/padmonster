@@ -71,11 +71,11 @@ ui <- fluidPage (
       )
     ),
 
-    prettyCheckboxGroup(
-      inputId = "selectActiveSkillTypes",
-      label = "Active Skill Types",
-      choices = ""
-    ),
+    # prettyCheckboxGroup(
+    #   inputId = "selectActiveSkillTypes",
+    #   label = "Active Skill Types",
+    #   choices = ""
+    # ),
 
     div(
       style = "display: flex; flex-wrap: wrap; padding-top:10px",
@@ -93,6 +93,11 @@ ui <- fluidPage (
         )
       )
     )
+
+  ),
+
+  uiOutput(
+    outputId = "monFil"
   )
 
 )
@@ -103,14 +108,14 @@ server <- function(input, output, session) {
 
   addResourcePath("img", "img")
 
+  for (table in dbListTables(con)) {
+    assign(paste0(table, ".dt"), setDT(dbReadTable(con, table)))
+  }
 
-  Attribute.dt <- setDT(dbReadTable(con, "Attribute"))
   Attribute.dt[, LinkHtml := paste0("<img src=", AttributeIconPath, " height='18' width='18'>")]
 
-  AwokenSkill.dt <- setDT(dbReadTable(con, "AwokenSkill"))
   AwokenSkill.dt[, LinkHtml := paste0("<img src=", AwokenSkillIconPath, " height='20' width='20'>")]
 
-  Type.dt <- setDT(dbReadTable(con, "Type"))
   Type.dt[, LinkHtml := paste0("<img src=", TypeIconPath, " height='20' width='20'>")]
 
   ActiveSkill.dt <- data.table(ActiveSkillType = c(
@@ -144,10 +149,12 @@ server <- function(input, output, session) {
   }
 
   clearSelectedAwokenSkills <- function() {
-    selectedAwokenSkills(NULL)
+    selectedAwokenSkills$Id <- NULL
+
+    selectedAwokenSkills$Icon <- NULL
 
     output$selectedAwokenSkills <- renderUI(
-      selectedAwokenSkills()
+      selectedAwokenSkills$Icon
     )
   }
 
@@ -191,21 +198,23 @@ server <- function(input, output, session) {
     selected = character(0)
   )
 
-  updatePrettyCheckboxGroup(
-    session = session,
-    inputId = "selectActiveSkillTypes",
-    choices = ActiveSkill.dt$ActiveSkillType,
-    inline = T
-  )
+  # updatePrettyCheckboxGroup(
+  #   session = session,
+  #   inputId = "selectActiveSkillTypes",
+  #   choices = ActiveSkill.dt$ActiveSkillType,
+  #   inline = T
+  # )
 
-  selectedAwokenSkills <- reactiveVal(NULL)
+  selectedAwokenSkills <- reactiveValues(Id = NULL, Icon = NULL)
 
 
   observeEvent(input$selectAwokenSkills, {
 
-    selectedAwokenSkills(
+    selectedAwokenSkills$Id <- c(selectedAwokenSkills$Id, input$selectAwokenSkills)
+
+    selectedAwokenSkills$Icon <-
       tagList(
-        selectedAwokenSkills(),
+        selectedAwokenSkills$Icon,
         tags$img(
           src = AwokenSkill.dt[AwokenSkillId == input$selectAwokenSkills,
                                AwokenSkillIconPath],
@@ -213,12 +222,11 @@ server <- function(input, output, session) {
           width = "25"
         )
       )
-    )
 
     output$selectedAwokenSkills <- renderUI(
       div(
         style = "background-color:gray;",
-        selectedAwokenSkills()
+        selectedAwokenSkills$Icon
       )
     )
 
@@ -267,6 +275,37 @@ server <- function(input, output, session) {
     )
 
     clearSelectedAwokenSkills()
+
+  })
+
+
+  awkSklRelCat.dt <- AwokenSkillRelation.dt[order(AwokenSkillId)][
+    SuperAwoken == 0,
+    paste0(paste0(formatC(AwokenSkillId, width=2, flag="0"), ";"), collapse = ""),
+    by = MonsterId]
+
+  observeEvent(input$submitFilters, {
+
+    awkSklSel <- paste0(
+      paste0(formatC(sort(selectedAwokenSkills$Id), width=2, flag="0"), ";"),
+      collapse = "")
+
+    monIdFltByAwkSkl <- awkSklRelCat.dt[grepl(awkSklSel, V1), MonsterId]
+
+    monFil <- Monster.dt[MonsterId %in% monIdFltByAwkSkl, Name]
+
+    output$monFil <- renderUI(
+      if (length(monFil)==0) {
+        NULL
+      } else {
+        radioGroupButtons(
+          inputId = "monFil",
+          label = "",
+          choices = monFil,
+          selected = character(0)
+        )
+      }
+    )
 
   })
 
