@@ -116,11 +116,11 @@ server <- function(input, output, session) {
     assign(paste0(table, ".dt"), setDT(dbReadTable(con, table)))
   }
 
-  Monster.dt[, LinkHtml := paste0("<img src=img/MonsterIcon/", MonsterId, ".png height='50' width='50'>")]
+  Monster.dt[, LinkHtml := paste0("<img src=img/MonsterIcon/", MonsterId, ".png title=", Name, " height='50' width='50'>")]
 
   Attribute.dt[, LinkHtml := paste0("<img src=", AttributeIconPath, " height='18' width='18'>")]
 
-  AwokenSkill.dt[, LinkHtml := paste0("<img src=img/AwokenSkill/", AwokenSkillId, ".png height='20' width='20'>")]
+  AwokenSkill.dt[, LinkHtml := paste0("<img src=img/AwokenSkill/", AwokenSkillId, ".png title=", AwokenSkillName, " height='20' width='20'>")]
 
   Type.dt[, LinkHtml := paste0("<img src=", TypeIconPath, " height='20' width='20'>")]
 
@@ -309,7 +309,8 @@ server <- function(input, output, session) {
 
   rm(temp)
 
-  monFlt <- reactiveValues(Id = NULL, Name = NULL)
+
+  monFlt <- reactiveValues(Id = NULL)
 
   observeEvent(input$submitFilters, {
 
@@ -343,10 +344,8 @@ server <- function(input, output, session) {
       monIdFltByAwkSkl
     ))
 
-    monFlt$Name <- Monster.dt[MonsterId %in% monFlt$Id, Name]
-
     output$monFlt <- renderUI(
-      if (length(monFlt$Name)==0) {
+      if (length(monFlt$Id)==0) {
         NULL
       } else {
         radioGroupButtons(
@@ -361,13 +360,25 @@ server <- function(input, output, session) {
   })
 
 
+  monData.dt <-
+    Monster.dt[, .(MonsterId, Name, MainAtt, SubAtt,
+      LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110)]
+
+  monData.dt <- merge(monData.dt, awkSklIconCat.dt, by = "MonsterId", all.x = T)
+
+  monDataLabel.dt <- data.table(label=
+    c("ID", "Name", "Main Attribute", "Sub Attribute", "Max Level",
+      "HP (Lv.Max)", "ATK (Lv.Max)","RCV (Lv.Max)",
+      "HP (Lv.110)", "ATK (Lv.110)","RCV (Lv.110)",
+      "Awoken Skills"
+      )
+  )
+
   observeEvent(input$monFlt, {
     output$monSelData <- renderTable(
       {
-        monSel <- Monster.dt[MonsterId == input$monFlt]
-        monSel[, `Awoken Skill` := awkSklIconCat.dt[MonsterId == input$monFlt, V1]]
-        monSel[, c("Id", "MonsterIconPath", "LinkHtml") := NULL]
-        cbind(colnames(monSel), transpose(monSel))
+        monSel <- monData.dt[MonsterId == input$monFlt]
+        cbind(monDataLabel.dt, transpose(monSel))
       },
       colnames = F,
       bordered = T,
