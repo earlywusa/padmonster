@@ -20,7 +20,7 @@ Type.dt[ , TypeName := str_match(Type.dt$TypeIconDownload, "\\/(\\w+)\\.png")[,2
 
 for(i in 1:length(Type.dt$TypeIconDownload)){
   download.file(paste0("http://pad.skyozora.com/",Type.dt$TypeIconDownload[i]),
-                paste0("app/img/Type/", Type.dt[i,TypeName], ".png"))
+                paste0("app/img/Type/", Type.dt[i,TypeId], ".png"))
 }
 
 Type.dt[ ,TypeIconPath := paste0("img/Type/", TypeName,".png")]
