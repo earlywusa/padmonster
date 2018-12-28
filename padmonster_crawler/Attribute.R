@@ -17,17 +17,13 @@ Attribute.dt[ , Id := 1:nrow(Attribute.dt)]
 
 
 Attribute.dt[ , AttributeName := c("火", "水", "木", "光", "暗")]
-Attribute.dt[ , AttributeFileName := c("Fire", "Water", "Wood", "Light", "Dark")]
 # Attribute.dt[ , AttributeIconPath := paste0("img/Attribute/", AttributeFileName,".png")]
 Attribute.dt[ , AttributeIconDownload := paste0("http://pad.skyozora.com/",Attribute.dt$AttributeIconDownload)]
 
 for(i in 1:length(Attribute.dt$AttributeIconDownload)){
   download.file(Attribute.dt$AttributeIconDownload[i], 
-                paste0("app/img/Attribute/", Attribute.dt[i,AttributeFileName], ".png"))
+                paste0("app/img/Attribute/", Attribute.dt[i,Id], ".png"))
 }
-
-Attribute.dt[ , AttributeFileName := NULL]
-
 
 setcolorder(Attribute.dt, c("Id", "AttributeName", "AttributeIconDownload"))
 
