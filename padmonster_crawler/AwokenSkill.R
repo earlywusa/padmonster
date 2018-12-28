@@ -21,13 +21,14 @@ AwokenSkillIconDownload.dt <- data.table(AwokenSkillIconDownload)
 AwokenSkill.dt <- cbind(AwokenSkillName.dt, AwokenSkillIconDownload.dt)
 AwokenSkill.dt <- AwokenSkill.dt[-1,]
 AwokenSkill.dt[ , AwokenSkillId := 1:nrow(AwokenSkill.dt)]
+#AwokenSkill.dt[ ,AwokenSkillIconPath := paste0("img/AwokenSkill/", AwokenSkillId,".png")]
 
 
 for(i in 1:length(AwokenSkill.dt$AwokenSkillIconDownload)){
-download.file(paste0(AwokenSkill.dt$AwokenSkillIconDownload[i]),paste0("app/img/AwokenSkill/", AwokenSkill.dt[i,AwokenSkillId], ".png"))
+download.file(paste0(AwokenSkill.dt$AwokenSkillIconDownload[i]), 
+              paste0("app/img/AwokenSkill/", AwokenSkill.dt[i,AwokenSkillId], ".png"))
 }
 
-AwokenSkill.dt[ ,AwokenSkillIconPath := paste0("img/AwokenSkill/", AwokenSkillId,".png")]
 
 
 ## 2. Write the data into database
@@ -39,7 +40,6 @@ conn <- dbConnect(drv = RSQLite::SQLite(), "db/padmonster.sqlite3")
 # }
 # AwokenSkill <- dbReadTable(conn, "AwokenSkill")
 
-AwokenSkill.dt[, AwokenSkillIconDownload := NULL]
 AwokenSkill.dt[, AwokenSkillDescription := NA]
 AwokenSkill.dt[, Id:= 1:nrow(AwokenSkill.dt) ]
 setcolorder(AwokenSkill.dt, c("Id", "AwokenSkillId"))

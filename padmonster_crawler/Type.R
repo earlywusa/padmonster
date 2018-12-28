@@ -17,16 +17,16 @@ Type.dt <- data.table(TypeIconDownload)
 Type.dt[ , Id := 1:nrow(Type.dt)]
 Type.dt[ , TypeId := 1:nrow(Type.dt)]
 Type.dt[ , TypeName := str_match(Type.dt$TypeIconDownload, "\\/(\\w+)\\.png")[,2]]
+Type.dt[ ,TypeIconDownload := paste0("http://pad.skyozora.com/",Type.dt$TypeIconDownload)]
+#Type.dt[ ,TypeIconPath := paste0("img/Type/", TypeId,".png")]
+
 
 for(i in 1:length(Type.dt$TypeIconDownload)){
-  download.file(paste0("http://pad.skyozora.com/",Type.dt$TypeIconDownload[i]),
+  download.file(Type.dt$TypeIconDownload[i],
                 paste0("app/img/Type/", Type.dt[i,TypeId], ".png"))
 }
 
-Type.dt[ ,TypeIconPath := paste0("img/Type/", TypeName,".png")]
-Type.dt[ ,TypeIconDownload := NULL]
-
-setcolorder(Type.dt, c("Id", "TypeId", "TypeName", "TypeIconPath"))
+setcolorder(Type.dt, c("Id", "TypeId", "TypeName", "TypeIconDownload"))
 
 ## 2. Write the data into database
 conn <- dbConnect(drv = RSQLite::SQLite(), "db/padmonster.sqlite3")
