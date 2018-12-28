@@ -283,10 +283,23 @@ server <- function(input, output, session) {
   })
 
 
-  awkSklRelCat.dt <- AwokenSkillRelation.dt[order(AwokenSkillId)][
+  awkSklIdCat.dt <- AwokenSkillRelation.dt[order(AwokenSkillId)][
     SuperAwoken == 0,
     paste0(paste0(formatC(AwokenSkillId, width=2, flag="0"), ";"), collapse = ""),
     by = MonsterId]
+
+  temp <- merge(
+    AwokenSkillRelation.dt,
+    AwokenSkill.dt[, .(AwokenSkillId, LinkHtml)],
+    by = "AwokenSkillId"
+  )
+
+  awkSklIconCat.dt <- temp[order(MonsterId, Position)][
+    SuperAwoken == 0,
+    paste0(LinkHtml, collapse = ""),
+    by = MonsterId]
+
+  rm(temp)
 
   monFlt <- reactiveValues(Id = NULL, Name = NULL)
 
@@ -313,7 +326,7 @@ server <- function(input, output, session) {
         paste0(formatC(sort(selectedAwokenSkills$Id), width=2, flag="0"), ";"),
         collapse = "")
 
-      monIdFltByAwkSkl <- awkSklRelCat.dt[grepl(awkSklSel, V1), MonsterId]
+      monIdFltByAwkSkl <- awkSklIdCat.dt[grepl(awkSklSel, V1), MonsterId]
     }
 
     monFlt$Id <- Reduce(intersect, list(
@@ -342,9 +355,14 @@ server <- function(input, output, session) {
 
   observeEvent(input$monFlt, {
     output$monSelData <- renderTable(
-      cbind(colnames(Monster.dt), transpose(Monster.dt[Name == input$monFlt])),
+      {
+        monSel <- Monster.dt[Name == input$monFlt]
+        monSel[, `Awoken Skill` := awkSklIconCat.dt[MonsterId == monSel$MonsterId, V1]]
+        cbind(colnames(monSel), transpose(monSel))
+      },
       colnames = F,
-      bordered = T
+      bordered = T,
+      sanitize.text.function = identity
     )
   })
 
