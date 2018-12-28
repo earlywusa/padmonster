@@ -108,9 +108,9 @@ ui <- fluidPage (
 
 server <- function(input, output, session) {
 
-  con <- dbConnect(SQLite(), "padmonster.sqlite3")
-
   addResourcePath("img", "img")
+
+  con <- dbConnect(SQLite(), "padmonster.sqlite3")
 
   for (table in dbListTables(con)) {
     assign(paste0(table, ".dt"), setDT(dbReadTable(con, table)))
@@ -118,7 +118,7 @@ server <- function(input, output, session) {
 
   Attribute.dt[, LinkHtml := paste0("<img src=", AttributeIconPath, " height='18' width='18'>")]
 
-  AwokenSkill.dt[, LinkHtml := paste0("<img src=", AwokenSkillIconPath, " height='20' width='20'>")]
+  AwokenSkill.dt[, LinkHtml := paste0("<img src=img/AwokenSkill/", AwokenSkillId, ".png height='20' width='20'>")]
 
   Type.dt[, LinkHtml := paste0("<img src=", TypeIconPath, " height='20' width='20'>")]
 
