@@ -116,6 +116,8 @@ server <- function(input, output, session) {
     assign(paste0(table, ".dt"), setDT(dbReadTable(con, table)))
   }
 
+  Monster.dt[, LinkHtml := paste0("<img src=img/MonsterIcon/", MonsterId, ".png height='50' width='50'>")]
+
   Attribute.dt[, LinkHtml := paste0("<img src=", AttributeIconPath, " height='18' width='18'>")]
 
   AwokenSkill.dt[, LinkHtml := paste0("<img src=img/AwokenSkill/", AwokenSkillId, ".png height='20' width='20'>")]
@@ -160,6 +162,12 @@ server <- function(input, output, session) {
     output$selectedAwokenSkills <- renderUI(
       selectedAwokenSkills$Icon
     )
+  }
+
+  getMonsterChoices <- function(Monster.dt) {
+    choices <- Monster.dt$MonsterId
+    names(choices) <- Monster.dt$LinkHtml
+    choices
   }
 
 
@@ -344,7 +352,7 @@ server <- function(input, output, session) {
         radioGroupButtons(
           inputId = "monFlt",
           label = "",
-          choices = monFlt$Name,
+          choices = getMonsterChoices(Monster.dt[MonsterId %in% monFlt$Id]),
           selected = character(0)
         )
       }
@@ -356,8 +364,9 @@ server <- function(input, output, session) {
   observeEvent(input$monFlt, {
     output$monSelData <- renderTable(
       {
-        monSel <- Monster.dt[Name == input$monFlt]
-        monSel[, `Awoken Skill` := awkSklIconCat.dt[MonsterId == monSel$MonsterId, V1]]
+        monSel <- Monster.dt[MonsterId == input$monFlt]
+        monSel[, `Awoken Skill` := awkSklIconCat.dt[MonsterId == input$monFlt, V1]]
+        monSel[, c("Id", "MonsterIconPath", "LinkHtml") := NULL]
         cbind(colnames(monSel), transpose(monSel))
       },
       colnames = F,
