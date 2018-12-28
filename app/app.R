@@ -118,11 +118,11 @@ server <- function(input, output, session) {
 
   Monster.dt[, LinkHtml := paste0("<img src=img/MonsterIcon/", MonsterId, ".png title=", Name, " height='50' width='50'>")]
 
-  Attribute.dt[, LinkHtml := paste0("<img src=", AttributeIconPath, " height='18' width='18'>")]
+  Attribute.dt[, LinkHtml := paste0("<img src=img/Attribute/", Id, ".png height='18' width='18'>")]
 
-  AwokenSkill.dt[, LinkHtml := paste0("<img src=img/AwokenSkill/", AwokenSkillId, ".png title=", AwokenSkillName, " height='20' width='20'>")]
+  AwokenSkill.dt[, LinkHtml := paste0("<img src=img/AwokenSkill/", AwokenSkillId, ".png height='20' width='20'>")]
 
-  Type.dt[, LinkHtml := paste0("<img src=", TypeIconPath, " height='20' width='20'>")]
+  Type.dt[, LinkHtml := paste0("<img src=img/Type/", TypeId, ".png height='20' width='20'>")]
 
   ActiveSkill.dt <- data.table(ActiveSkillType = c(
     "解绑","解觉醒无效","解锁珠",
@@ -229,7 +229,7 @@ server <- function(input, output, session) {
         selectedAwokenSkills$Icon,
         tags$img(
           src = AwokenSkill.dt[AwokenSkillId == input$selectAwokenSkills,
-                               AwokenSkillIconPath],
+                               paste0("img/AwokenSkill/", AwokenSkillId, ".png")],
           height = "25",
           width = "25"
         )
