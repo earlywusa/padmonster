@@ -393,11 +393,8 @@ server <- function(input, output, session) {
 
   setnames(monData.dt, "V1", "AwokenSkill")
 
-  monDataLabel.dt <- data.table(label=
-    c("Max Level", "HP (Lv.Max)", "ATK (Lv.Max)","RCV (Lv.Max)",
-      "HP (Lv.110)", "ATK (Lv.110)","RCV (Lv.110)"
-    )
-  )
+  monData.dt[, Weighted := Hp/10 + Atk/5 + Rec/3]
+  monData.dt[, Weighted110 := Hp110/10 + Atk110/5 + Rec110/3]
 
   observeEvent(input$selectMonster, {
     output$monsterDataViewer <- renderUI({
@@ -426,10 +423,14 @@ server <- function(input, output, session) {
           ),
           renderTable(
             {
-              monSel <- monSel[, .(LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110)]
-              cbind(monDataLabel.dt, transpose(monSel))
+              data.table(
+                Lv = c(monSel$LvMax, 110L),
+                HP = c(monSel$Hp, monSel$Hp110),
+                ATK = c(monSel$Atk, monSel$Atk110),
+                RCV = c(monSel$Rec, monSel$Rec110),
+                Weighted = c(monSel$Weighted, monSel$Weighted110)
+              )
             },
-            colnames = F,
             bordered = T,
             spacing = "s",
             sanitize.text.function = identity
