@@ -9,6 +9,23 @@ library(RSQLite)
 ui <- fluidPage (
   useShinyjs(),
 
+  tags$head(
+    tags$style(HTML("
+      .radiobtn {
+        padding-left: 10px; padding-right: 10px;
+        padding-top: 5px; padding-bottom: 5px;
+      }
+
+      .checkbtn {
+        padding: 5px;
+      }
+
+      .control-label {
+        margin-bottom: -5px;
+      }
+    "))
+  ),
+
   h2("PAD Monsters"),
   wellPanel(
     id = "filters",
@@ -31,7 +48,7 @@ ui <- fluidPage (
 
     tags$b("Awoken Skills"),
     div(
-      style = "display:flex; flex-wrap:wrap; padding-top:5px;",
+      style = "display:flex; flex-wrap:wrap;",
       div(
         style = "align-self:center;",
         uiOutput(
@@ -46,11 +63,14 @@ ui <- fluidPage (
         )
       )
     ),
-    checkboxGroupButtons(
-      inputId = "selectAwokenSkills",
-      label = "",
-      choices = "",
-      individual = T
+    div(
+      style = "margin-top:-15px; margin-bottom:-5px; margin-left:-8px; margin-right:-25px;",
+      checkboxGroupButtons(
+        inputId = "selectAwokenSkills",
+        label = "",
+        choices = "",
+        individual = T
+      )
     ),
 
     div(
@@ -61,13 +81,6 @@ ui <- fluidPage (
         choices = "",
         options = pickerOptions(noneSelectedText = "None"),
         width = "fit"
-      ),
-      div(
-        style = "align-self:center; padding-top:10px;",
-        actionButton(
-          inputId = "clearSuperAS",
-          label = "clear"
-        )
       )
     ),
 
@@ -96,12 +109,15 @@ ui <- fluidPage (
 
   ),
 
-  uiOutput(
-    outputId = "monFlt"
+  div(
+      style = "margin-top:-30px; margin-right:-10px; display:flex; justify-content: center;",
+    uiOutput(
+      outputId = "monsterFiltered"
+    )
   ),
 
   uiOutput(
-    outputId = "monSelData"
+    outputId = "monsterDataViewer"
   )
 
 )
@@ -116,7 +132,7 @@ server <- function(input, output, session) {
     assign(paste0(table, ".dt"), setDT(dbReadTable(con, table)))
   }
 
-  Monster.dt[, LinkHtml := paste0("<img src=img/MonsterIcon/", MonsterId, ".png title=", Name, " height='50' width='50'>")]
+  Monster.dt[, LinkHtml := paste0("<img src=img/MonsterIcon/", MonsterId, ".png title=", Name, " height='47' width='47'>")]
 
   Attribute.dt[, LinkHtml := paste0("<img src=img/Attribute/", Id, ".png height='18' width='18'>")]
 
@@ -203,11 +219,11 @@ server <- function(input, output, session) {
   updatePickerInput(
     session = session,
     inputId = "pickSuperAS",
-    choices = AwokenSkill.dt$AwokenSkillId,
+    choices = c("None", AwokenSkill.dt$AwokenSkillId),
     choicesOpt = list(
-      content = sprintf(AwokenSkill.dt$LinkHtml)
+      content = sprintf(c("None", AwokenSkill.dt$LinkHtml))
     ),
-    selected = character(0)
+    selected = "None"
   )
 
   # updatePrettyCheckboxGroup(
@@ -257,12 +273,6 @@ server <- function(input, output, session) {
 
   })
 
-  observeEvent(input$clearSuperAS, {
-
-    shinyjs::reset("pickSuperAS")
-
-  })
-
 
   observeEvent(input$resetFilters, {
 
@@ -288,6 +298,12 @@ server <- function(input, output, session) {
 
     clearSelectedAwokenSkills()
 
+    updatePickerInput(
+      session = session,
+      inputId = "pickSuperAS",
+      selected = "None"
+    )
+
   })
 
 
@@ -295,20 +311,6 @@ server <- function(input, output, session) {
     SuperAwoken == 0,
     paste0(paste0(formatC(AwokenSkillId, width=2, flag="0"), ";"), collapse = ""),
     by = MonsterId]
-
-  temp <- merge(
-    AwokenSkillRelation.dt,
-    AwokenSkill.dt[, .(AwokenSkillId, LinkHtml)],
-    by = "AwokenSkillId"
-  )
-
-  awkSklIconCat.dt <- temp[order(MonsterId, Position)][
-    SuperAwoken == 0,
-    paste0(LinkHtml, collapse = ""),
-    by = MonsterId]
-
-  rm(temp)
-
 
   monFlt <- reactiveValues(Id = NULL)
 
@@ -344,15 +346,25 @@ server <- function(input, output, session) {
       monIdFltByAwkSkl
     ))
 
-    output$monFlt <- renderUI(
+    output$monsterFiltered <- renderUI(
       if (length(monFlt$Id)==0) {
         NULL
       } else {
-        radioGroupButtons(
-          inputId = "monFlt",
-          label = "",
-          choices = getMonsterChoices(Monster.dt[MonsterId %in% monFlt$Id]),
-          selected = character(0)
+        tagList(
+          tags$head(
+            tags$style(HTML("
+              .btn-monster.btn {
+                padding:0px;
+              }
+            "))
+          ),
+          radioGroupButtons(
+            inputId = "selectMonster",
+            label = "",
+            choices = getMonsterChoices(Monster.dt[MonsterId %in% monFlt$Id]),
+            selected = character(0),
+            status = "monster"
+          )
         )
       }
     )
@@ -364,26 +376,68 @@ server <- function(input, output, session) {
     Monster.dt[, .(MonsterId, Name, MainAtt, SubAtt,
       LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110)]
 
-  monData.dt <- merge(monData.dt, awkSklIconCat.dt, by = "MonsterId", all.x = T)
-
-  monDataLabel.dt <- data.table(label=
-    c("ID", "Name", "Main Attribute", "Sub Attribute", "Max Level",
-      "HP (Lv.Max)", "ATK (Lv.Max)","RCV (Lv.Max)",
-      "HP (Lv.110)", "ATK (Lv.110)","RCV (Lv.110)",
-      "Awoken Skills"
-      )
+  temp <- merge(
+    AwokenSkillRelation.dt,
+    AwokenSkill.dt[, .(AwokenSkillId, LinkHtml)],
+    by = "AwokenSkillId"
   )
 
-  observeEvent(input$monFlt, {
-    output$monSelData <- renderTable(
-      {
-        monSel <- monData.dt[MonsterId == input$monFlt]
-        cbind(monDataLabel.dt, transpose(monSel))
-      },
-      colnames = F,
-      bordered = T,
-      sanitize.text.function = identity
+  awkSklIconCat.dt <- temp[order(MonsterId, Position)][
+    SuperAwoken == 0,
+    paste0(LinkHtml, collapse = ""),
+    by = MonsterId]
+
+  rm(temp)
+
+  monData.dt <- merge(monData.dt, awkSklIconCat.dt, by = "MonsterId", all.x = T)
+
+  setnames(monData.dt, "V1", "AwokenSkill")
+
+  monDataLabel.dt <- data.table(label=
+    c("Max Level", "HP (Lv.Max)", "ATK (Lv.Max)","RCV (Lv.Max)",
+      "HP (Lv.110)", "ATK (Lv.110)","RCV (Lv.110)"
     )
+  )
+
+  observeEvent(input$selectMonster, {
+    output$monsterDataViewer <- renderUI({
+
+      monSel <- monData.dt[MonsterId == input$selectMonster]
+      tagList(
+        wellPanel(
+          style = "background:azure;",
+          div(
+            style = "display:flex; flex-wrap:wrap;",
+            div(
+              tags$img(
+                src = paste0("img/MonsterIcon/", input$selectMonster, ".png"),
+                height = '60',
+                width = '60'
+              )
+            ),
+            div(
+              style = "align-self:center; padding-left:5px; padding-top:5px;",
+              tags$b(paste0("No.", monSel$MonsterId, " - ", monSel$Name))
+            )
+          ),
+          div(
+            style = "padding-top:10px; padding-bottom:10px;",
+            HTML(monSel$AwokenSkill)
+          ),
+          renderTable(
+            {
+              monSel <- monSel[, .(LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110)]
+              cbind(monDataLabel.dt, transpose(monSel))
+            },
+            colnames = F,
+            bordered = T,
+            spacing = "s",
+            sanitize.text.function = identity
+          )
+        )
+      )
+
+    })
   })
 
 
