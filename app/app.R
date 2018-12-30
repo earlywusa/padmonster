@@ -222,12 +222,14 @@ server <- function(input, output, session) {
     size = "sm"
   )
 
+  allSuperASId <- AwokenSkillRelation.dt[SuperAwoken==1, sort(unique(AwokenSkillId))]
+
   updatePickerInput(
     session = session,
     inputId = "pickSuperAS",
-    choices = c("None", AwokenSkill.dt$AwokenSkillId),
+    choices = c("None", allSuperASId),
     choicesOpt = list(
-      content = sprintf(c("None", AwokenSkill.dt$LinkHtml))
+      content = sprintf(c("None", AwokenSkill.dt[AwokenSkillId %in% allSuperASId, LinkHtml]))
     ),
     selected = "None"
   )
@@ -346,10 +348,17 @@ server <- function(input, output, session) {
       monIdFltByAwkSkl <- awkSklIdCat.dt[grepl(awkSklSel, V1), MonsterId]
     }
 
+    if (input$pickSuperAS == "None") {
+      monIdFltBySuperAS <- Monster.dt$MonsterId
+    } else {
+      monIdFltBySuperAS <- AwokenSkillRelation.dt[SuperAwoken == 1 & AwokenSkillId == input$pickSuperAS, MonsterId]
+    }
+
     monFlt$Id <- Reduce(intersect, list(
       monIdFltByMainAtt,
       monIdFltBySubAtt,
-      monIdFltByAwkSkl
+      monIdFltByAwkSkl,
+      monIdFltBySuperAS
     ))
 
     output$monsterFiltered <- renderUI(
@@ -395,11 +404,17 @@ server <- function(input, output, session) {
     paste0(LinkHtml, collapse = ""),
     by = MonsterId]
 
+  superASIconCat.dt <- temp[order(MonsterId, Position)][
+    SuperAwoken == 1,
+    paste0(LinkHtml, collapse = ""),
+    by = MonsterId]
+
   rm(temp)
 
   monData.dt <- merge(monData.dt, awkSklIconCat.dt, by = "MonsterId", all.x = T)
-
   setnames(monData.dt, "V1", "AwokenSkill")
+  monData.dt <- merge(monData.dt, superASIconCat.dt, by = "MonsterId", all.x = T)
+  setnames(monData.dt, "V1", "SuperAwokenSkill")
 
   observeEvent(input$selectMonster, {
     output$monsterDataViewer <- renderUI({
@@ -423,8 +438,13 @@ server <- function(input, output, session) {
             )
           ),
           div(
-            style = "padding-top:10px; padding-bottom:10px;",
+            style = "padding-top:10px; padding-bottom:5px;",
             HTML(monSel$AwokenSkill)
+          ),
+          div(
+            style = "padding-bottom:10px;",
+            tags$b("超覺醒: "),
+            HTML(monSel$SuperAwokenSkill)
           ),
           renderTable(
             {
