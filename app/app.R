@@ -109,7 +109,7 @@ ui <- fluidPage (
       ),
       div(
         style = "padding-left:10px; margin-top:-20px;",
-        selectInput(
+        pickerInput(
           inputId = "ordering",
           label = "Sort Results by",
           choices = c("ID" = "MonsterId",
