@@ -92,17 +92,28 @@ ui <- fluidPage (
 
     div(
       style = "display: flex; flex-wrap: wrap; padding-top:10px",
-      actionButton(
-        inputId = "submitFilters",
-        label = "Filter",
-        icon = icon("filter"),
-        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+      div(
+        actionButton(
+          inputId = "submitFilters",
+          label = "Filter",
+          icon = icon("filter"),
+          style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+        )
       ),
       div(
-        style = "padding-left: 10px",
+        style = "padding-left:10px;",
         actionButton(
           inputId = "resetFilters",
           label = "Reset"
+        )
+      ),
+      div(
+        style = "padding-left:10px; margin-top:-20px;",
+        selectInput(
+          inputId = "ordering",
+          label = "Sort Results by",
+          choices = c("ID" = "MonsterId",
+            "HP" = "Hp", "ATK" = "Atk", "RCV" = "Rec", "Weighted"= "Weighted")
         )
       )
     )
@@ -133,6 +144,9 @@ server <- function(input, output, session) {
   }
 
   Monster.dt[, LinkHtml := paste0("<img src=img/MonsterIcon/", MonsterId, ".png title=", Name, " height='47' width='47'>")]
+
+  Monster.dt[, Weighted := Hp/10 + Atk/5 + Rec/3]
+  Monster.dt[, Weighted110 := Hp110/10 + Atk110/5 + Rec110/3]
 
   Attribute.dt[, LinkHtml := paste0("<img src=img/Attribute/", Id, ".png height='18' width='18'>")]
 
@@ -361,7 +375,7 @@ server <- function(input, output, session) {
           radioGroupButtons(
             inputId = "selectMonster",
             label = "",
-            choices = getMonsterChoices(Monster.dt[MonsterId %in% monFlt$Id]),
+            choices = getMonsterChoices(Monster.dt[MonsterId %in% monFlt$Id][order(-get(input$ordering))]),
             selected = character(0),
             status = "monster"
           )
@@ -374,7 +388,7 @@ server <- function(input, output, session) {
 
   monData.dt <-
     Monster.dt[, .(MonsterId, Name, MainAtt, SubAtt,
-      LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110)]
+      LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110, Weighted, Weighted110)]
 
   temp <- merge(
     AwokenSkillRelation.dt,
@@ -392,9 +406,6 @@ server <- function(input, output, session) {
   monData.dt <- merge(monData.dt, awkSklIconCat.dt, by = "MonsterId", all.x = T)
 
   setnames(monData.dt, "V1", "AwokenSkill")
-
-  monData.dt[, Weighted := Hp/10 + Atk/5 + Rec/3]
-  monData.dt[, Weighted110 := Hp110/10 + Atk110/5 + Rec110/3]
 
   observeEvent(input$selectMonster, {
     output$monsterDataViewer <- renderUI({
