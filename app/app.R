@@ -154,14 +154,6 @@ server <- function(input, output, session) {
 
   Type.dt[, LinkHtml := paste0("<img src=img/Type/", TypeId, ".png height='20' width='20'>")]
 
-  ActiveSkill.dt <- data.table(ActiveSkillType = c(
-    "解绑","解觉醒无效","解锁珠",
-    "破防","破大伤吸收","破属性吸收",
-    "加combo","延长转珠时间",
-    "增伤",
-    "单体固伤","全体固伤")
-  )
-
 
   getAttributeChoices <- function(Attribute.dt, sub = F) {
     choices <- c("Any", Attribute.dt$AttributeName)
@@ -388,7 +380,9 @@ server <- function(input, output, session) {
 
   monData.dt <-
     Monster.dt[, .(MonsterId, Name, MainAtt, SubAtt,
-      LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110, Weighted, Weighted110)]
+      LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110, Weighted, Weighted110, ActiveSkillId)]
+
+  monData.dt <- merge(monData.dt, ActiveSkill.dt, by = "ActiveSkillId", all.x = T)
 
   temp <- merge(
     AwokenSkillRelation.dt,
@@ -445,6 +439,14 @@ server <- function(input, output, session) {
             bordered = T,
             spacing = "s",
             sanitize.text.function = identity
+          ),
+          div(
+            style = "display:flex; margin-top:-10px;",
+            tags$b("Skill: "), monSel$ActiveSkillName,
+            tags$b("CD: "), paste0(monSel$MinCd, "/", monSel$MaxCd)
+          ),
+          div(
+            monSel$ActiveSkillDescription
           )
         )
       )
