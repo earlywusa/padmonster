@@ -1,13 +1,11 @@
 library(data.table)
 library(shiny)
-library(shinyjs)
 library(shinyWidgets)
 library(DBI)
 library(RSQLite)
 
 
 ui <- fluidPage (
-  useShinyjs(),
 
   tags$head(
     tags$style(HTML("
@@ -284,8 +282,6 @@ server <- function(input, output, session) {
 
   observeEvent(input$resetFilters, {
 
-    shinyjs::reset("filters")
-
     updateRadioGroupButtons(
       session = session,
       inputId = "selectMainAtt",
@@ -389,9 +385,11 @@ server <- function(input, output, session) {
 
   monData.dt <-
     Monster.dt[, .(MonsterId, Name, MainAtt, SubAtt,
-      LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110, Weighted, Weighted110, ActiveSkillId)]
+      LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110, Weighted, Weighted110, ActiveSkillId, LeaderSkillId)]
 
   monData.dt <- merge(monData.dt, ActiveSkill.dt, by = "ActiveSkillId", all.x = T)
+
+  monData.dt <- merge(monData.dt, LeaderSkill.dt, by = "LeaderSkillId", all.x = T)
 
   temp <- merge(
     AwokenSkillRelation.dt,
@@ -467,6 +465,12 @@ server <- function(input, output, session) {
           ),
           div(
             monSel$ActiveSkillDescription
+          ),
+          div(
+            tags$b("Leader Skill: "), monSel$LeaderSkillName
+          ),
+          div(
+            monSel$LeaderSkillDescription
           )
         )
       )
