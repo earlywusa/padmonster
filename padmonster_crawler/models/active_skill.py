@@ -6,7 +6,7 @@ class ActiveSkill(object):
     '<img src="images/drops/Water.png" width="25">':'水珠',
     '<img src="images/drops/Water+.png" width="25">':'水+珠',
     '<img src="images/drops/Wood.png" width="25">':'木珠',
-    '<img src="images/drops/Wood+.png" width="25">':'木珠',
+    '<img src="images/drops/Wood+.png" width="25">':'木+珠',
     '<img src="images/drops/Light.png" width="25">':'光珠',
     '<img src="images/drops/Light+.png" width="25">':'光+珠',
     '<img src="images/drops/Dark.png" width="25">':'暗珠',
@@ -17,8 +17,9 @@ class ActiveSkill(object):
     '<img src="images/drops/Dead+.png" width="25">':'死+珠',
     '<img src="images/drops/Heart.png" width="25">':'心珠',
     '<img src="images/drops/Heart+.png" width="25">':'心+珠',
+    '<img src="images/drops/Bomb.png" width="25">':'炸彈珠',
     '<td colspan="5">':'',
-    '<img src="images/change.gif">':'变成',
+    '<img src="images/change.gif">':'變成',
     '</td>':''
     }
 
@@ -35,6 +36,12 @@ class ActiveSkill(object):
         for entry in self.activeSkillReplaceMap.items():
             # print("replacing: " + entry[0] + " to " + entry[1])
             self.description = self.description.replace(entry[0], entry[1])
+        while self.description.find('<') >= 0 and self.description.find('>') >= 0:
+            start = self.description.find('<')
+            end = self.description.find('>')
+            if start < end:
+                self.description = self.description[0:start] + self.description[end+1: len(self.description)]
+
 
     def insertSkill(self, monster, handler):
         id = None
