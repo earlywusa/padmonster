@@ -11,6 +11,7 @@ MonsterIcon.dt <- Monster.dt[ , c("MonsterId", "MonsterIconPathDownload")]
 for (i in 1:nrow(MonsterIcon.dt)){
   if (file.exists(paste0("app/img/MonsterIcon/", MonsterIcon.dt[i, MonsterId], ".png")) == FALSE) {
       download.file(MonsterIcon.dt$MonsterIconPathDownload[i],
-                    paste0("app/img/MonsterIcon/", MonsterIcon.dt[i, MonsterId], ".png"))
+                    paste0("app/img/MonsterIcon/", MonsterIcon.dt[i, MonsterId], ".png"),
+                    mode = "wb")
   }
 }
