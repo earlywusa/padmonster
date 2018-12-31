@@ -68,17 +68,27 @@ ui <- fluidPage (
         style = "padding-left:10px;",
         actionButton(
           inputId = "clearSelectedAwokenSkills",
-          label = "clear"
+          label = "Clear"
+        )
+      ),
+      div(
+        style = "padding-left:10px;",
+        actionButton(
+          inputId = "toggleAwokenSkillList",
+          label = "Hide/Show List"
         )
       )
     ),
-    div(
-      style = "margin-top:-15px; margin-bottom:-5px; margin-left:-8px; margin-right:-25px;",
-      checkboxGroupButtons(
-        inputId = "selectAwokenSkills",
-        label = "",
-        choices = "",
-        individual = T
+    conditionalPanel(
+      condition = "input.toggleAwokenSkillList%2==0",
+      div(
+        style = "margin-top:-15px; margin-bottom:-5px; margin-left:-8px; margin-right:-25px;",
+        checkboxGroupButtons(
+          inputId = "selectAwokenSkills",
+          label = "",
+          choices = "",
+          individual = T
+        )
       )
     ),
 
@@ -195,7 +205,7 @@ server <- function(input, output, session) {
   ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
     pattern = "死珠", replacement = "<img src=img/Orb/Dead.png  height='19' width='19'>")]
   ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "炸弹珠", replacement = "<img src=img/Orb/Bomb.png  height='19' width='19'>")]
+    pattern = "炸彈珠", replacement = "<img src=img/Orb/Bomb.png  height='19' width='19'>")]
 
   getAttributeChoices <- function(Attribute.dt, sub = F) {
     choices <- c("Any", Attribute.dt$AttributeName)

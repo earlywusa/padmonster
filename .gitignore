@@ -5,3 +5,4 @@ padmonster_crawler/__pycache__/
 db/AwokenSkill.csv.keep
 db/access_database.py
 padmonster_crawler/models/__pycache__/
+app/rsconnect/
