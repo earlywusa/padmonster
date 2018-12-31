@@ -10,7 +10,7 @@ class PadMonster(scrapy.spiders.Spider):
     name = "padmonster"
     # allowed_domains = ["douban.com"]
     allowed_domains = ["pad.skyozora.com"]
-    start_urls = ["http://pad.skyozora.com/pets/4000"]
+    start_urls = ["http://pad.skyozora.com/pets/1"]
     count = 1
     def parse(self, response):
         index = response.url.split("/")[-1]
@@ -116,17 +116,23 @@ class PadMonster(scrapy.spiders.Spider):
                 item["active_skill_min_cd"] = None
 
             item["active_skill_description"] = ""
-            active_skill_description_icon = monster.xpath('tr[2]/td/img/@src').extract()
-            if len(active_skill_description_icon) > 0:
-                additional_description = ""
-                for icon_path in active_skill_description_icon:
-                    element = icon_path.split("/")[-1].split(".")[0]
-                    additional_description = additional_description + " " + element
-                item["active_skill_description"] = item["active_skill_description"] + additional_description
-            active_skill_description = monster.xpath('tr[2]/td/text()').extract()
-            if len(active_skill_description) > 0:
-                print(active_skill_description)
-                item["active_skill_description"] = item["active_skill_description"].join(active_skill_description)
+            active_skill_description_raw = monster.xpath('tr[2]/td').extract()
+            item["active_skill_description"] = "".join(active_skill_description_raw).strip()
+
+            # active_skill_description = monster.xpath('tr[2]/td/text()').extract()
+            # if len(active_skill_description) > 0:
+            #     print(active_skill_description)
+            #     active_skill_description_text = "".join(active_skill_description)
+            #     item["active_skill_description"] = item["active_skill_description"] + active_skill_description_text.strip()
+            #
+            # active_skill_description_icon = monster.xpath('tr[2]/td/img/@src').extract()
+            # if len(active_skill_description_icon) > 0:
+            #     additional_description = ""
+            #     for icon_path in active_skill_description_icon:
+            #         element = icon_path.split("/")[-1].split(".")[0]
+            #         additional_description = additional_description + " " + element
+            #     item["active_skill_description"] = item["active_skill_description"] + additional_description
+
 
         if monsters_table[5] != None:
             monster = monsters_table[5]
@@ -202,10 +208,10 @@ class PadMonster(scrapy.spiders.Spider):
         yield item
         print("---------------")
 
-        count = index+1
+        count = index+30
         # count = 4284
 
-        if count < 4200:
+        if count < 4178:
             nextLink = "http://pad.skyozora.com/pets/" + str(count)
             print(nextLink)
             yield Request(urljoin(response.url, nextLink), callback = self.parse)
