@@ -154,14 +154,6 @@ server <- function(input, output, session) {
 
   Type.dt[, LinkHtml := paste0("<img src=img/Type/", TypeId, ".png height='20' width='20'>")]
 
-  ActiveSkill.dt <- data.table(ActiveSkillType = c(
-    "解绑","解觉醒无效","解锁珠",
-    "破防","破大伤吸收","破属性吸收",
-    "加combo","延长转珠时间",
-    "增伤",
-    "单体固伤","全体固伤")
-  )
-
 
   getAttributeChoices <- function(Attribute.dt, sub = F) {
     choices <- c("Any", Attribute.dt$AttributeName)
@@ -230,12 +222,14 @@ server <- function(input, output, session) {
     size = "sm"
   )
 
+  allSuperASId <- AwokenSkillRelation.dt[SuperAwoken==1, sort(unique(AwokenSkillId))]
+
   updatePickerInput(
     session = session,
     inputId = "pickSuperAS",
-    choices = c("None", AwokenSkill.dt$AwokenSkillId),
+    choices = c("None", allSuperASId),
     choicesOpt = list(
-      content = sprintf(c("None", AwokenSkill.dt$LinkHtml))
+      content = sprintf(c("None", AwokenSkill.dt[AwokenSkillId %in% allSuperASId, LinkHtml]))
     ),
     selected = "None"
   )
@@ -354,10 +348,17 @@ server <- function(input, output, session) {
       monIdFltByAwkSkl <- awkSklIdCat.dt[grepl(awkSklSel, V1), MonsterId]
     }
 
+    if (input$pickSuperAS == "None") {
+      monIdFltBySuperAS <- Monster.dt$MonsterId
+    } else {
+      monIdFltBySuperAS <- AwokenSkillRelation.dt[SuperAwoken == 1 & AwokenSkillId == input$pickSuperAS, MonsterId]
+    }
+
     monFlt$Id <- Reduce(intersect, list(
       monIdFltByMainAtt,
       monIdFltBySubAtt,
-      monIdFltByAwkSkl
+      monIdFltByAwkSkl,
+      monIdFltBySuperAS
     ))
 
     output$monsterFiltered <- renderUI(
@@ -388,7 +389,9 @@ server <- function(input, output, session) {
 
   monData.dt <-
     Monster.dt[, .(MonsterId, Name, MainAtt, SubAtt,
-      LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110, Weighted, Weighted110)]
+      LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110, Weighted, Weighted110, ActiveSkillId)]
+
+  monData.dt <- merge(monData.dt, ActiveSkill.dt, by = "ActiveSkillId", all.x = T)
 
   temp <- merge(
     AwokenSkillRelation.dt,
@@ -401,11 +404,17 @@ server <- function(input, output, session) {
     paste0(LinkHtml, collapse = ""),
     by = MonsterId]
 
+  superASIconCat.dt <- temp[order(MonsterId, Position)][
+    SuperAwoken == 1,
+    paste0(LinkHtml, collapse = ""),
+    by = MonsterId]
+
   rm(temp)
 
   monData.dt <- merge(monData.dt, awkSklIconCat.dt, by = "MonsterId", all.x = T)
-
   setnames(monData.dt, "V1", "AwokenSkill")
+  monData.dt <- merge(monData.dt, superASIconCat.dt, by = "MonsterId", all.x = T)
+  setnames(monData.dt, "V1", "SuperAwokenSkill")
 
   observeEvent(input$selectMonster, {
     output$monsterDataViewer <- renderUI({
@@ -429,8 +438,13 @@ server <- function(input, output, session) {
             )
           ),
           div(
-            style = "padding-top:10px; padding-bottom:10px;",
+            style = "padding-top:10px; padding-bottom:5px;",
             HTML(monSel$AwokenSkill)
+          ),
+          div(
+            style = "padding-bottom:10px;",
+            tags$b("超覺醒: "),
+            HTML(monSel$SuperAwokenSkill)
           ),
           renderTable(
             {
@@ -445,6 +459,14 @@ server <- function(input, output, session) {
             bordered = T,
             spacing = "s",
             sanitize.text.function = identity
+          ),
+          div(
+            style = "display:flex; margin-top:-10px;",
+            tags$b("Skill: "), monSel$ActiveSkillName,
+            tags$b("CD: "), paste0(monSel$MinCd, "/", monSel$MaxCd)
+          ),
+          div(
+            monSel$ActiveSkillDescription
           )
         )
       )
