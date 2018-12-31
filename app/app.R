@@ -165,16 +165,37 @@ server <- function(input, output, session) {
   Type.dt[, LinkHtmlL := paste0("<img src=img/Type/", TypeId, ".png height='23' width='23'>")]
 
   ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "火珠", replacement = "<img src=img/Attribute/1.png  height='19' width='19'>")]
+    pattern = "火珠", replacement = "<img src=img/Orb/Fire.png  height='19' width='19'>")]
   ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "水珠", replacement = "<img src=img/Attribute/2.png  height='19' width='19'>")]
+    pattern = "水珠", replacement = "<img src=img/Orb/Water.png  height='19' width='19'>")]
   ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "木珠", replacement = "<img src=img/Attribute/3.png  height='19' width='19'>")]
+    pattern = "木珠", replacement = "<img src=img/Orb/Wood.png  height='19' width='19'>")]
   ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "光珠", replacement = "<img src=img/Attribute/4.png  height='19' width='19'>")]
+    pattern = "光珠", replacement = "<img src=img/Orb/Light.png  height='19' width='19'>")]
   ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "暗珠", replacement = "<img src=img/Attribute/5.png  height='19' width='19'>")]
-
+    pattern = "暗珠", replacement = "<img src=img/Orb/Dark.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "心珠", replacement = "<img src=img/Orb/Heart.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "毒珠", replacement = "<img src=img/Orb/Poison.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "火\\+珠", replacement = "<img src=img/Orb/Fire+.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "水\\+珠", replacement = "<img src=img/Orb/Water+.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "木\\+珠", replacement = "<img src=img/Orb/Wood+.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "光\\+珠", replacement = "<img src=img/Orb/Light+.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "暗\\+珠", replacement = "<img src=img/Orb/Dark+.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "心\\+珠", replacement = "<img src=img/Orb/Heart+.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "毒\\+珠", replacement = "<img src=img/Orb/Poison+.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "死珠", replacement = "<img src=img/Orb/Dead.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "炸弹珠", replacement = "<img src=img/Orb/Bomb.png  height='19' width='19'>")]
 
   getAttributeChoices <- function(Attribute.dt, sub = F) {
     choices <- c("Any", Attribute.dt$AttributeName)
