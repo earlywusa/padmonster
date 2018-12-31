@@ -164,6 +164,17 @@ server <- function(input, output, session) {
   Type.dt[, LinkHtml := paste0("<img src=img/Type/", TypeId, ".png height='20' width='20'>")]
   Type.dt[, LinkHtmlL := paste0("<img src=img/Type/", TypeId, ".png height='23' width='23'>")]
 
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "火珠", replacement = "<img src=img/Attribute/1.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "水珠", replacement = "<img src=img/Attribute/2.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "木珠", replacement = "<img src=img/Attribute/3.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "光珠", replacement = "<img src=img/Attribute/4.png  height='19' width='19'>")]
+  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
+    pattern = "暗珠", replacement = "<img src=img/Attribute/5.png  height='19' width='19'>")]
+
 
   getAttributeChoices <- function(Attribute.dt, sub = F) {
     choices <- c("Any", Attribute.dt$AttributeName)
@@ -529,7 +540,7 @@ server <- function(input, output, session) {
                 tags$td(
                   style = "text-align: left; font-size: 13px;",
                   colspan = "6",
-                  monSel$ActiveSkillDescription
+                  HTML(wuIfNA(monSel$ActiveSkillDescription))
                 )
               ),
               tags$tr(
@@ -538,14 +549,14 @@ server <- function(input, output, session) {
                 ),
                 tags$td(
                   colspan = "5",
-                  monSel$LeaderSkillName
+                  wuIfNA(monSel$LeaderSkillName)
                 )
               ),
               tags$tr(
                 tags$td(
                   style = "text-align: left;  font-size: 13px;",
                   colspan = "6",
-                  monSel$LeaderSkillDescription
+                  wuIfNA(monSel$LeaderSkillDescription)
                 )
               )
             )
