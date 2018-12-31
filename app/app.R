@@ -21,6 +21,17 @@ ui <- fluidPage (
       .control-label {
         margin-bottom: -5px;
       }
+
+      table {
+        border-collapse: collapse;
+      }
+
+      td, th {
+        border: 1px solid #dddddd;
+        text-align: center;
+        padding: 3px;
+      }
+
     "))
   ),
 
@@ -151,6 +162,7 @@ server <- function(input, output, session) {
   AwokenSkill.dt[, LinkHtml := paste0("<img src=img/AwokenSkill/", AwokenSkillId, ".png height='20' width='20'>")]
 
   Type.dt[, LinkHtml := paste0("<img src=img/Type/", TypeId, ".png height='20' width='20'>")]
+  Type.dt[, LinkHtmlL := paste0("<img src=img/Type/", TypeId, ".png height='23' width='23'>")]
 
 
   getAttributeChoices <- function(Attribute.dt, sub = F) {
@@ -225,11 +237,11 @@ server <- function(input, output, session) {
   updatePickerInput(
     session = session,
     inputId = "pickSuperAS",
-    choices = c("None", allSuperASId),
+    choices = c("Any", allSuperASId),
     choicesOpt = list(
-      content = sprintf(c("None", AwokenSkill.dt[AwokenSkillId %in% allSuperASId, LinkHtml]))
+      content = sprintf(c("Any", AwokenSkill.dt[AwokenSkillId %in% allSuperASId, LinkHtml]))
     ),
-    selected = "None"
+    selected = "Any"
   )
 
   # updatePrettyCheckboxGroup(
@@ -305,7 +317,7 @@ server <- function(input, output, session) {
     updatePickerInput(
       session = session,
       inputId = "pickSuperAS",
-      selected = "None"
+      selected = "Any"
     )
 
   })
@@ -334,6 +346,12 @@ server <- function(input, output, session) {
       monIdFltBySubAtt <- Monster.dt[SubAtt == input$selectSubAtt, MonsterId]
     }
 
+    if (length(input$selectTypes)==0) {
+      monIdFltByType <- Monster.dt$MonsterId
+    } else {
+      monIdFltByType <- TypeRelation.dt[TypeId %in% input$selectTypes, unique(MonsterId)]
+    }
+
     if (is.null(selectedAwokenSkills$Id)) {
       monIdFltByAwkSkl <- Monster.dt$MonsterId
     } else {
@@ -344,7 +362,7 @@ server <- function(input, output, session) {
       monIdFltByAwkSkl <- awkSklIdCat.dt[grepl(awkSklSel, V1), MonsterId]
     }
 
-    if (input$pickSuperAS == "None") {
+    if (input$pickSuperAS == "Any") {
       monIdFltBySuperAS <- Monster.dt$MonsterId
     } else {
       monIdFltBySuperAS <- AwokenSkillRelation.dt[SuperAwoken == 1 & AwokenSkillId == input$pickSuperAS, MonsterId]
@@ -354,7 +372,8 @@ server <- function(input, output, session) {
       monIdFltByMainAtt,
       monIdFltBySubAtt,
       monIdFltByAwkSkl,
-      monIdFltBySuperAS
+      monIdFltBySuperAS,
+      monIdFltByType
     ))
 
     output$monsterFiltered <- renderUI(
@@ -409,10 +428,26 @@ server <- function(input, output, session) {
 
   rm(temp)
 
+  temp <- merge(
+    TypeRelation.dt,
+    Type.dt[, .(TypeId, LinkHtmlL)],
+    by = "TypeId"
+  )
+
+  typeIconCat.dt <- temp[order(MonsterId)][, paste0(LinkHtmlL, collapse = ""), by = MonsterId]
+
+  rm(temp)
+
   monData.dt <- merge(monData.dt, awkSklIconCat.dt, by = "MonsterId", all.x = T)
   setnames(monData.dt, "V1", "AwokenSkill")
   monData.dt <- merge(monData.dt, superASIconCat.dt, by = "MonsterId", all.x = T)
   setnames(monData.dt, "V1", "SuperAwokenSkill")
+  monData.dt <- merge(monData.dt, typeIconCat.dt, by = "MonsterId", all.x = T)
+  setnames(monData.dt, "V1", "Type")
+
+  wuIfNA <- function(x) {
+    ifelse(is.na(x), "無", x)
+  }
 
   observeEvent(input$selectMonster, {
     output$monsterDataViewer <- renderUI({
@@ -432,17 +467,25 @@ server <- function(input, output, session) {
             ),
             div(
               style = "align-self:center; padding-left:5px; padding-top:5px;",
-              tags$b(paste0("No.", monSel$MonsterId, " - ", monSel$Name))
+              tags$b(
+                style = "font-size:15px;",
+                paste0("No.", monSel$MonsterId, " - ", monSel$Name)
+              ),
+              div(
+                style = "padding-top:5px;",
+                HTML(monSel$Type)
+              )
             )
           ),
           div(
             style = "padding-top:10px; padding-bottom:5px;",
-            HTML(monSel$AwokenSkill)
+            tags$b("覺醒技:"),
+            HTML(wuIfNA(monSel$AwokenSkill))
           ),
           div(
             style = "padding-bottom:10px;",
-            tags$b("超覺醒: "),
-            HTML(monSel$SuperAwokenSkill)
+            tags$b("超覺醒:"),
+            HTML(wuIfNA(monSel$SuperAwokenSkill))
           ),
           renderTable(
             {
@@ -460,17 +503,52 @@ server <- function(input, output, session) {
           ),
           div(
             style = "display:flex; margin-top:-10px;",
-            tags$b("Skill: "), monSel$ActiveSkillName,
-            tags$b("CD: "), paste0(monSel$MinCd, "/", monSel$MaxCd)
-          ),
-          div(
-            monSel$ActiveSkillDescription
-          ),
-          div(
-            tags$b("Leader Skill: "), monSel$LeaderSkillName
-          ),
-          div(
-            monSel$LeaderSkillDescription
+            tags$table(
+              style = "width: 305px;",
+              tags$tr(
+                tags$td(
+                  tags$b("主動技能")
+                ),
+                tags$td(
+                  monSel$ActiveSkillName
+                ),
+                tags$td(
+                  "初始CD"
+                ),
+                tags$td(
+                  monSel$MaxCd
+                ),
+                tags$td(
+                  "最短CD"
+                ),
+                tags$td(
+                  monSel$MinCd
+                )
+              ),
+              tags$tr(
+                tags$td(
+                  style = "text-align: left; font-size: 13px;",
+                  colspan = "6",
+                  monSel$ActiveSkillDescription
+                )
+              ),
+              tags$tr(
+                tags$td(
+                  tags$b("隊長技能")
+                ),
+                tags$td(
+                  colspan = "5",
+                  monSel$LeaderSkillName
+                )
+              ),
+              tags$tr(
+                tags$td(
+                  style = "text-align: left;  font-size: 13px;",
+                  colspan = "6",
+                  monSel$LeaderSkillDescription
+                )
+              )
+            )
           )
         )
       )
