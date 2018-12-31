@@ -35,18 +35,47 @@ class Monster(object):
         self.leaderSkill = LeaderSkill(item)
         self.activeSkill = ActiveSkill(item)
         self.lvl_max = item["lvl_max"]
+        self.types = item["types"]
 
     def insertAwokenSkill(self, handler):
         if self.awokenSkills != None:
             return self.awokenSkills.insertScript(self, awokenSkillDict)
 
+    def isExist(self, handler):
+        #move to monster class later
+        sql = "select * from Monster where MonsterId = " + str(self.id)
+        # print("query sql: " + sql)
+        rows = handler.query(sql)
+        if len(rows) > 0:
+            return True
+        # print(rows)
+        return False
+
+    def insertTypes(self, handler):
+        sql = "select MonsterId from TypeRelation where MonsterId = " + str(self.id) + ";"
+        rows = handler.query(sql)
+        if len(rows) == 0:
+            for type in self.types:
+                typeId = handler.monsterTypeDic[type]
+                sql = "insert into TypeRelation ( \
+                MonsterId, \
+                TypeId )\
+                values (?,?);"
+                obj = (self.id, typeId)
+                # print("insert type: " + sql)
+                id = handler.insert(sql, obj)
+
     def insert(self, handler):
+        self.insertTypes(handler)
         self.awokenSkills.insertRelation(self, handler)
+
+        if self.isExist(handler):
+            print("found monster, do nothing")
+            return None
         leaderSkillId = self.leaderSkill.insertSkill(self, handler)
         print("leader skill id: {}".format(leaderSkillId))
         activeSkillId = self.activeSkill.insertSkill(self, handler)
         print("active skill id: {}".format(activeSkillId))
-
         sql = "insert into " + self.monsterTable + " \
         (MonsterId, \
         Name, \

@@ -54,6 +54,7 @@ class PadMonster(scrapy.spiders.Spider):
                 item["sub_attr"] = attrs[1].split(":")[1]
             else:
                 item["sub_attr"] = ""
+            item["types"] = []
             types = monster.xpath('tr/td[3]/a/@title').extract()
             if len(types) > 0:
                 # print(types)
@@ -99,7 +100,7 @@ class PadMonster(scrapy.spiders.Spider):
                     active_skill_init_cd_int = int(active_skill_init_cd[0])
                     item["active_skill_init_cd"] = active_skill_init_cd_int
                 else:
-                    item["active_skill_init_cd"] = "-"
+                    item["active_skill_init_cd"] = None
             else:
                 item["active_skill_init_cd"] = None
             active_skill_min_cd = monster.xpath('tr[1]/td[5]/text()').extract()
@@ -110,7 +111,7 @@ class PadMonster(scrapy.spiders.Spider):
                     # print(active_skill_min_cd_int)
                     item["active_skill_min_cd"] = active_skill_min_cd_int
                 else:
-                    item["active_skill_min_cd"] = "-"
+                    item["active_skill_min_cd"] = None
             else:
                 item["active_skill_min_cd"] = None
 

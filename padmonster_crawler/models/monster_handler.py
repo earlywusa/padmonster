@@ -10,6 +10,7 @@ class MonsterHandler(object):
     awokenSkillDic = {}
     activeSkillDic = {}
     leaderSkillDic = {}
+    monsterTypeDic = {}
     def __init__(self):
         try:
             print("initialize connection")
@@ -19,6 +20,7 @@ class MonsterHandler(object):
             self.fetchAwokenSkill()
             self.fetchActiveSkill()
             self.fetchLeaderSkill()
+            self.fetchMonsterType()
         except Error as e:
             print("error message: " + e)
 
@@ -43,6 +45,11 @@ class MonsterHandler(object):
             print(pair)
             self.leaderSkillDic[pair[0]] = pair[1]
 
+    def fetchMonsterType(self):
+        sql = "select TypeName, TypeId from Type;"
+        types = self.query(sql)
+        for pair in types:
+            self.monsterTypeDic[pair[0]] = pair[1]
 
     def query(self, sql):
         cur = self.conn.cursor()
@@ -58,22 +65,11 @@ class MonsterHandler(object):
         self.conn.commit()
         return last_id
 
-    def isExist(self, id):
-        #move to monster class later
-        sql = "select * from Monster where MonsterId = " + str(id)
-        rows = self.query(sql)
-        if len(rows) > 0:
-            return True
-        return False
+
 
     def processMonster(self, monster):
         try:
-            if self.isExist(monster.id):
-                print("found Monster")
-                #if different update
-            else:
-                print("Cannot find monster, insert")
-                lastRowId = monster.insert(self)
+            lastRowId = monster.insert(self)
         except Error as e:
             print("error message: ")
             exc_type, exc_value, exc_tb = sys.exc_info()
