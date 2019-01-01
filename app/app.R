@@ -37,107 +37,133 @@ ui <- fluidPage (
 
   h2("PAD Monsters"),
   wellPanel(
-    id = "filters",
 
-    radioGroupButtons(
-      inputId = "selectMainAtt",
-      label = "Main Attribute",
-      choices = ""
-    ),
-    radioGroupButtons(
-      inputId = "selectSubAtt",
-      label = "Sub Attribute",
-      choices = ""
-    ),
-    checkboxGroupButtons(
-      inputId = "selectTypes",
-      label = "Types",
-      choices = ""
-    ),
+    tabsetPanel(
 
-    tags$b("Awoken Skills"),
-    div(
-      style = "display:flex; flex-wrap:wrap;",
-      div(
-        style = "align-self:center;",
-        uiOutput(
-          outputId = "selectedAwokenSkills"
-        )
-      ),
-      div(
-        style = "padding-left:10px;",
-        actionButton(
-          inputId = "clearSelectedAwokenSkills",
-          label = "Clear"
-        )
-      ),
-      div(
-        style = "padding-left:10px;",
-        actionButton(
-          inputId = "toggleAwokenSkillList",
-          label = "Hide/Show List"
-        )
-      )
-    ),
-    conditionalPanel(
-      condition = "input.toggleAwokenSkillList%2==0",
-      div(
-        style = "margin-top:-15px; margin-bottom:-5px; margin-left:-8px; margin-right:-25px;",
+      tabPanel(
+        title = "Search by Filtering",
+
+        radioGroupButtons(
+          inputId = "selectMainAtt",
+          label = "Main Attribute",
+          choices = ""
+        ),
+        radioGroupButtons(
+          inputId = "selectSubAtt",
+          label = "Sub Attribute",
+          choices = ""
+        ),
         checkboxGroupButtons(
-          inputId = "selectAwokenSkills",
-          label = "",
-          choices = "",
-          individual = T
+          inputId = "selectTypes",
+          label = "Types",
+          choices = ""
+        ),
+
+        tags$b("Awoken Skills"),
+        div(
+          style = "display:flex; flex-wrap:wrap;",
+          div(
+            style = "align-self:center;",
+            uiOutput(
+              outputId = "selectedAwokenSkills"
+            )
+          ),
+          div(
+            style = "padding-left:10px;",
+            actionButton(
+              inputId = "clearSelectedAwokenSkills",
+              label = "Clear"
+            )
+          ),
+          div(
+            style = "padding-left:10px;",
+            actionButton(
+              inputId = "toggleAwokenSkillList",
+              label = "Hide/Show List"
+            )
+          )
+        ),
+        conditionalPanel(
+          condition = "input.toggleAwokenSkillList%2==0",
+          div(
+            style = "margin-top:-15px; margin-bottom:-5px; margin-left:-8px; margin-right:-25px;",
+            checkboxGroupButtons(
+              inputId = "selectAwokenSkills",
+              label = "",
+              choices = "",
+              individual = T
+            )
+          )
+        ),
+
+        div(
+          style = "display:flex; flex-wrap:wrap; padding-top:5px;",
+          pickerInput(
+            inputId = "pickSuperAS",
+            label = "Super Awoken Skill",
+            choices = "",
+            options = pickerOptions(noneSelectedText = "None"),
+            width = "fit"
+          )
+        ),
+
+        # prettyCheckboxGroup(
+        #   inputId = "selectActiveSkillTypes",
+        #   label = "Active Skill Types",
+        #   choices = ""
+        # ),
+
+        div(
+          style = "display: flex; flex-wrap: wrap; padding-top:10px",
+          div(
+            actionButton(
+              inputId = "submitFilters",
+              label = "Filter",
+              icon = icon("filter"),
+              style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+            )
+          ),
+          div(
+            style = "padding-left:10px;",
+            actionButton(
+              inputId = "resetFilters",
+              label = "Reset"
+            )
+          ),
+          div(
+            style = "padding-left:10px; margin-top:-20px;",
+            pickerInput(
+              inputId = "ordering",
+              label = "Sort Results by",
+              choices = c("ID" = "MonsterId",
+                "HP" = "Hp", "ATK" = "Atk", "RCV" = "Rec", "Weighted"= "Weighted")
+            )
+          )
         )
-      )
-    ),
 
-    div(
-      style = "display:flex; flex-wrap:wrap; padding-top:5px;",
-      pickerInput(
-        inputId = "pickSuperAS",
-        label = "Super Awoken Skill",
-        choices = "",
-        options = pickerOptions(noneSelectedText = "None"),
-        width = "fit"
-      )
-    ),
+      ), # tabPanel
 
-    # prettyCheckboxGroup(
-    #   inputId = "selectActiveSkillTypes",
-    #   label = "Active Skill Types",
-    #   choices = ""
-    # ),
+      tabPanel(
+        title = "Search by ID",
 
-    div(
-      style = "display: flex; flex-wrap: wrap; padding-top:10px",
-      div(
+        textInput(
+          inputId = "monsterId",
+          label = "",
+          placeholder = "Input Monster ID (e.g. 4428)",
+          width = 300
+        ),
+
         actionButton(
-          inputId = "submitFilters",
-          label = "Filter",
-          icon = icon("filter"),
+          inputId = "submitMonsterId",
+          label = "Search",
+          icon = icon("search"),
           style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
         )
-      ),
-      div(
-        style = "padding-left:10px;",
-        actionButton(
-          inputId = "resetFilters",
-          label = "Reset"
-        )
-      ),
-      div(
-        style = "padding-left:10px; margin-top:-20px;",
-        pickerInput(
-          inputId = "ordering",
-          label = "Sort Results by",
-          choices = c("ID" = "MonsterId",
-            "HP" = "Hp", "ATK" = "Atk", "RCV" = "Rec", "Weighted"= "Weighted")
-        )
       )
-    )
 
-  ),
+    ) # tabsetPanel
+
+  ), # wellPanel
 
   div(
       style = "margin-top:-30px; margin-right:-10px; display:flex; justify-content: center;",
@@ -418,30 +444,34 @@ server <- function(input, output, session) {
       monIdFltByType
     ))
 
-    output$monsterFiltered <- renderUI(
-      if (length(monFlt$Id)==0) {
-        NULL
-      } else {
-        tagList(
-          tags$head(
-            tags$style(HTML("
-              .btn-monster.btn {
-                padding:0px;
-              }
-            "))
-          ),
-          radioGroupButtons(
-            inputId = "selectMonster",
-            label = "",
-            choices = getMonsterChoices(Monster.dt[MonsterId %in% monFlt$Id][order(-get(input$ordering))]),
-            selected = character(0),
-            status = "monster"
-          )
-        )
-      }
-    )
-
   })
+
+  observeEvent(input$submitMonsterId, {
+    monFlt$Id <- as.integer(input$monsterId)
+  })
+
+  output$monsterFiltered <- renderUI(
+    if (length(monFlt$Id)==0) {
+      NULL
+    } else {
+      tagList(
+        tags$head(
+          tags$style(HTML("
+            .btn-monster.btn {
+              padding:0px;
+            }
+          "))
+        ),
+        radioGroupButtons(
+          inputId = "selectMonster",
+          label = "",
+          choices = getMonsterChoices(Monster.dt[MonsterId %in% monFlt$Id][order(-get(input$ordering))]),
+          selected = character(0),
+          status = "monster"
+        )
+      )
+    }
+  )
 
 
   monData.dt <-
