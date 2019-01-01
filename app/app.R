@@ -32,6 +32,11 @@ ui <- fluidPage (
         padding: 3px;
       }
 
+      .state {
+        width: 85px;
+        font-size: 10px;
+      }
+
     "))
   ),
 
@@ -107,14 +112,31 @@ ui <- fluidPage (
           )
         ),
 
-        # prettyCheckboxGroup(
-        #   inputId = "selectActiveSkillTypes",
-        #   label = "Active Skill Types",
-        #   choices = ""
-        # ),
+        div(
+          style = "display:flex; flex-wrap:wrap; align-items:center;",
+          tags$b("Active Skill Type"),
+          div(
+            style = "padding-left:10px;",
+            actionButton(
+                inputId = "toggleActiveSkillTypeList",
+                label = "Hide/Show List"
+            )
+          )
+        ),
+        conditionalPanel(
+          condition = "input.toggleActiveSkillTypeList%2==1",
+          div(
+            style = "display:flex; flex-wrap:wrap; margin-top:-5px;",
+            prettyCheckboxGroup(
+              inputId = "selectActiveSkillTypes",
+              label = "",
+              choices = ""
+            )
+          )
+        ),
 
         div(
-          style = "display: flex; flex-wrap: wrap; padding-top:10px",
+          style = "display: flex; flex-wrap: wrap; padding-top:30px",
           div(
             actionButton(
               inputId = "submitFilters",
@@ -233,6 +255,37 @@ server <- function(input, output, session) {
   ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
     pattern = "炸彈珠", replacement = "<img src=img/Orb/Bomb.png  height='19' width='19'>")]
 
+  ActiveSkillType.dt[ActiveSkillType=="傷害吸收無效化", ActiveSkillType := "大傷吸收無效"]
+  ActiveSkillType.dt[, ActiveSkillType := sub("傷害增幅", "增加傷害", ActiveSkillType)]
+  ActiveSkillType.dt[ActiveSkillType=="全場攻擊", ActiveSkillType := "全體攻擊"]
+  ActiveSkillType.dt[ActiveSkillType=="冷卻時間縮短", ActiveSkillType := "縮短冷卻時間"]
+  ActiveSkillType.dt[ActiveSkillType%in%c("受到傷害減少","受到傷害無效化"), ActiveSkillType := "減少受到的傷害"]
+  ActiveSkillType.dt[ActiveSkillType=="回復提升", ActiveSkillType := "提升回復"]
+  ActiveSkillType.dt[ActiveSkillType=="增加移動時間", ActiveSkillType := "增加轉珠時間"]
+  ActiveSkillType.dt[ActiveSkillType=="減少移動時間", ActiveSkillType := "減少轉珠時間"]
+  ActiveSkillType.dt[grepl(x = ActiveSkillType, pattern = "大炮（全體"), ActiveSkillType := "大炮（全體）"]
+  ActiveSkillType.dt[grepl(x = ActiveSkillType, pattern = "大炮（單體"), ActiveSkillType := "大炮（單體）"]
+  ActiveSkillType.dt[ActiveSkillType=="天降的寶珠不會產生COMBO", ActiveSkillType := "無天降"]
+  ActiveSkillType.dt[ActiveSkillType=="寶珠刷新", ActiveSkillType := "刷新寶珠"]
+  ActiveSkillType.dt[ActiveSkillType=="寶珠強化", ActiveSkillType := "強化寶珠"]
+  ActiveSkillType.dt[ActiveSkillType=="寶珠轉換", ActiveSkillType := "轉換寶珠"]
+  ActiveSkillType.dt[ActiveSkillType=="寶珠鎖定", ActiveSkillType := "鎖定寶珠"]
+  ActiveSkillType.dt[ActiveSkillType=="屬性傷害吸收無效化", ActiveSkillType := "屬性傷害吸收無效"]
+  ActiveSkillType.dt[ActiveSkillType=="攻擊延遲", ActiveSkillType := "延遲"]
+  ActiveSkillType.dt[ActiveSkillType=="自身屬性變換", ActiveSkillType := "轉換自身屬性"]
+  ActiveSkillType.dt[ActiveSkillType=="解除鎖定", ActiveSkillType := "解除寶珠鎖定"]
+  ActiveSkillType.dt[ActiveSkillType=="防禦力下降", ActiveSkillType := "減少敵人防禦"]
+  ActiveSkillType.dt[ActiveSkillType=="隊長轉換", ActiveSkillType := "轉換隊長"]
+  ActiveSkillType.dt[ActiveSkillType=="COMBO增加", ActiveSkillType := "增加Combo"]
+  ActiveSkillType.dt[ActiveSkillType=="HP吸取", ActiveSkillType := "吸收HP"]
+  ActiveSkillType.dt[ActiveSkillType=="HP回復", ActiveSkillType := "回復HP"]
+  ActiveSkillType.dt[ActiveSkillType=="增加傷害（類型）", ActiveSkillType := "增傷（Type）"]
+  ActiveSkillType.dt[ActiveSkillType=="增加傷害（屬性）", ActiveSkillType := "增傷（屬性）"]
+  ActiveSkillType.dt[ActiveSkillType=="增加傷害（全隊）", ActiveSkillType := "增傷（按覺醒數量）"]
+  ActiveSkillType.dt[ActiveSkillType=="HP回復", ActiveSkillType := "回復HP"]
+  ActiveSkillType.dt[ActiveSkillType=="HP回復", ActiveSkillType := "回復HP"]
+
+
   getAttributeChoices <- function(Attribute.dt, sub = F) {
     choices <- c("Any", Attribute.dt$AttributeName)
     names(choices) <- c("Any", Attribute.dt$LinkHtml)
@@ -312,12 +365,15 @@ server <- function(input, output, session) {
     selected = "Any"
   )
 
-  # updatePrettyCheckboxGroup(
-  #   session = session,
-  #   inputId = "selectActiveSkillTypes",
-  #   choices = ActiveSkill.dt$ActiveSkillType,
-  #   inline = T
-  # )
+  allActiveSkillTypes <- ActiveSkillType.dt[, sort(unique(ActiveSkillType))]
+  # sortByStringLength <- function(v) v[order(nchar(v))]
+
+  updatePrettyCheckboxGroup(
+    session = session,
+    inputId = "selectActiveSkillTypes",
+    choices = allActiveSkillTypes,
+    inline = T
+  )
 
   selectedAwokenSkills <- reactiveValues(Id = NULL, Icon = NULL)
 
@@ -436,12 +492,20 @@ server <- function(input, output, session) {
       monIdFltBySuperAS <- AwokenSkillRelation.dt[SuperAwoken == 1 & AwokenSkillId == input$pickSuperAS, MonsterId]
     }
 
+    if (length(input$selectActiveSkillTypes)==0) {
+      monIdFltByASType <- Monster.dt$MonsterId
+    } else {
+      ASIdFltByASType <- ActiveSkillType.dt[, all(input$selectActiveSkillTypes %in% ActiveSkillType), by = ActiveSkillId][V1==T, ActiveSkillId]
+      monIdFltByASType <- Monster.dt[ActiveSkillId %in% ASIdFltByASType, MonsterId]
+    }
+
     monFlt$Id <- Reduce(intersect, list(
       monIdFltByMainAtt,
       monIdFltBySubAtt,
       monIdFltByAwkSkl,
       monIdFltBySuperAS,
-      monIdFltByType
+      monIdFltByType,
+      monIdFltByASType
     ))
 
   })
