@@ -686,11 +686,14 @@ server <- function(input, output, session) {
               ),
               tags$tr(
                 tags$td(
+                  "外部鏈接"
+                ),
+                tags$td(
                   style = "text-align: left;",
-                  colspan = "6",
+                  colspan = "5",
                   tags$a(
                     href = paste0("http://pad.skyozora.com/pets/", monSel$MonsterId),
-                    "戰友網鏈接"
+                    "戰友網"
                   )
                 )
               )
