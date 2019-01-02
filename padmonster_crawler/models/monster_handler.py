@@ -14,8 +14,8 @@ class MonsterHandler(object):
     def __init__(self):
         try:
             print("initialize connection")
-            # self.conn = sqlite3.connect('db/padmonster.sqlite3')
-            self.conn = sqlite3.connect("/Users/erlisuo/practice/padguide/spider/padmonster/db/padmonster.sqlite3")
+            self.conn = sqlite3.connect('db/padmonster.sqlite3')
+            # self.conn = sqlite3.connect("/Users/erlisuo/practice/padguide/spider/padmonster/db/padmonster.sqlite3")
             # self.awokenSkillDic = {}
             self.fetchAwokenSkill()
             self.fetchActiveSkill()
@@ -35,14 +35,14 @@ class MonsterHandler(object):
         sql = "select ActiveSkillName, ActiveSkillId from ActiveSkill;"
         activeSkills = self.query(sql)
         for pair in activeSkills:
-            print(pair)
+            # print(pair)
             self.activeSkillDic[pair[0]] = pair[1]
 
     def fetchLeaderSkill(self):
         sql = "select LeaderSkillName, LeaderSkillId from LeaderSkill;"
         leaderSkills = self.query(sql)
         for pair in leaderSkills:
-            print(pair)
+            # print(pair)
             self.leaderSkillDic[pair[0]] = pair[1]
 
     def fetchMonsterType(self):
