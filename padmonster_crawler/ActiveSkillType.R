@@ -44,6 +44,9 @@ ActiveSkillType.dt4 <- melt(ActiveSkillType.dt3, id.vars = c("ActiveSkillName", 
                            measure.vars = paste0("ActiveSkillType", 1:MaxComb), na.rm = TRUE)
 ActiveSkillType.dt4 [, c("variable", "ActiveSkillDescription") := NULL]
 
+ActiveSkillList.dt <- data.table(unique(ActiveSkillType.dt4$ActiveSkillName))
+fwrite(x = ActiveSkillList.dt, "db/ActiveSkillList.csv")
+
 # Get ActiveSkillId
 conn <- dbConnect(drv = RSQLite::SQLite(), "db/padmonster.sqlite3")
 ActiveSkill <- dbReadTable(conn,"ActiveSkill")
