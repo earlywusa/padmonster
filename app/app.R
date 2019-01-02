@@ -50,7 +50,7 @@ ui <- fluidPage (
   ),
 
   titlePanel("PAD Monsters"),
-  
+
   wellPanel(
 
     tabsetPanel(
@@ -464,7 +464,11 @@ server <- function(input, output, session) {
 
   monFlt <- reactiveValues(Id = NULL)
 
+  forAutoScroll <- reactiveValues(V1 = 0)
+
   observeEvent(input$submitFilters, {
+
+    forAutoScroll$V1 <- 0
 
     if (input$selectMainAtt == "Any") {
       monIdFltByMainAtt <- Monster.dt$MonsterId
@@ -517,6 +521,8 @@ server <- function(input, output, session) {
       monIdFltByType,
       monIdFltByASType
     ))
+
+    session$sendCustomMessage(type = "scrolltoid", message = list("monsterFiltered"))
 
   })
 
@@ -714,8 +720,14 @@ server <- function(input, output, session) {
 
     })
 
-    session$sendCustomMessage(type = "scrolltoid", message = list("monsterDataViewer"))
+    forAutoScroll$V1 <- forAutoScroll$V1 + 1
 
+  })
+
+  observeEvent(forAutoScroll$V1, {
+    if (forAutoScroll$V1>1) {
+      session$sendCustomMessage(type = "scrolltoid", message = list("monsterDataViewer"))
+    }
   })
 
 
