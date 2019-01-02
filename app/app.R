@@ -49,7 +49,8 @@ ui <- fluidPage (
     );'
   ),
 
-  h2("PAD Monsters"),
+  titlePanel("PAD Monsters"),
+  
   wellPanel(
 
     tabsetPanel(
