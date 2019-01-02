@@ -679,9 +679,19 @@ server <- function(input, output, session) {
               ),
               tags$tr(
                 tags$td(
-                  style = "text-align: left;  font-size: 13px;",
+                  style = "text-align: left; font-size: 13px;",
                   colspan = "6",
                   wuIfNA(monSel$LeaderSkillDescription)
+                )
+              ),
+              tags$tr(
+                tags$td(
+                  style = "text-align: left;",
+                  colspan = "6",
+                  tags$a(
+                    href = paste0("http://pad.skyozora.com/pets/", monSel$MonsterId),
+                    "戰友網鏈接"
+                  )
                 )
               )
             )
