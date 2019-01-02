@@ -40,6 +40,15 @@ ui <- fluidPage (
     "))
   ),
 
+  tags$script(
+    'Shiny.addCustomMessageHandler(
+      "scrolltoid",
+      function(e_id) {
+        document.getElementById(e_id).scrollIntoView();
+      }
+    );'
+  ),
+
   h2("PAD Monsters"),
   wellPanel(
 
@@ -530,7 +539,6 @@ server <- function(input, output, session) {
           inputId = "selectMonster",
           label = "",
           choices = getMonsterChoices(Monster.dt[MonsterId %in% monFlt$Id][order(-get(input$ordering))]),
-          selected = character(0),
           status = "monster"
         )
       )
@@ -586,6 +594,7 @@ server <- function(input, output, session) {
   }
 
   observeEvent(input$selectMonster, {
+
     output$monsterDataViewer <- renderUI({
 
       monSel <- monData.dt[MonsterId == input$selectMonster]
@@ -703,6 +712,9 @@ server <- function(input, output, session) {
       )
 
     })
+
+    session$sendCustomMessage(type = "scrolltoid", message = list("monsterDataViewer"))
+
   })
 
 
