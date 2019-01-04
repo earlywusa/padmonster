@@ -305,6 +305,8 @@ server <- function(input, output, session) {
   ActiveSkillType.dt[ActiveSkillType=="增加傷害（類型）", ActiveSkillType := "增傷（Type）"]
   ActiveSkillType.dt[ActiveSkillType=="增加傷害（屬性）", ActiveSkillType := "增傷（屬性）"]
   ActiveSkillType.dt[ActiveSkillType=="增加傷害（全隊）", ActiveSkillType := "增傷（按覺醒數量）"]
+  ActiveSkillType.dt[ActiveSkillType=="HP回復", ActiveSkillType := "回復HP"]
+  ActiveSkillType.dt[ActiveSkillType=="HP回復", ActiveSkillType := "回復HP"]
 
 
   getAttributeChoices <- function(Attribute.dt, sub = F) {
