@@ -37,6 +37,11 @@ ui <- fluidPage (
         font-size: 10px;
       }
 
+      #monsterId {
+        font-size: 16px;
+        padding: 16px;
+      }
+
     "))
   ),
 
@@ -61,6 +66,8 @@ ui <- fluidPage (
       clearInterval(socket_timeout_interval)
     });
   "),
+
+  tags$style(".swal-modal {width: 300px;}"),
 
   titlePanel("PAD Monsters"),
 
@@ -535,7 +542,7 @@ server <- function(input, output, session) {
 
   observeEvent(input$submitMonsterId, {
     if (!as.integer(input$monsterId) %in% Monster.dt$MonsterId) {
-      sendSweetAlert(session = session, title = "No monster with this ID exists")
+      sendSweetAlert(session = session, text = "No monster with this ID exists", title = "")
     } else {
       monFlt$Id <- as.integer(input$monsterId)
     }
