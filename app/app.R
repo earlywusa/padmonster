@@ -733,8 +733,6 @@ server <- function(input, output, session) {
 
   dbDisconnect(con)
 
-  session$allowReconnect(TRUE)
-
 }
 
 shinyApp(ui, server)
