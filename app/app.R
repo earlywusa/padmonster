@@ -468,11 +468,6 @@ server <- function(input, output, session) {
   })
 
 
-  awkSklIdCat.dt <- AwokenSkillRelation.dt[order(AwokenSkillId)][
-    SuperAwoken == 0,
-    paste0(paste0(formatC(AwokenSkillId, width=2, flag="0"), ";"), collapse = ""),
-    by = MonsterId]
-
   monFlt <- reactiveValues(Id = NULL)
 
   forAutoScroll <- reactiveValues(V1 = 0)
@@ -504,11 +499,12 @@ server <- function(input, output, session) {
     if (is.null(selectedAwokenSkills$Id)) {
       monIdFltByAwkSkl <- Monster.dt$MonsterId
     } else {
-      awkSklSel <- paste0(
-        paste0(formatC(sort(selectedAwokenSkills$Id), width=2, flag="0"), ";"),
-        collapse = "")
+      monIdFltByAwkSkl.ls <- lapply(
+        unique(selectedAwokenSkills$Id),
+        function(x) AwokenSkillRelation.dt[SuperAwoken == 0, sum(AwokenSkillId==x)>=sum(selectedAwokenSkills$Id==x), by = MonsterId][V1==TRUE, MonsterId]
+      )
 
-      monIdFltByAwkSkl <- awkSklIdCat.dt[grepl(awkSklSel, V1), MonsterId]
+      monIdFltByAwkSkl <- Reduce(intersect, monIdFltByAwkSkl.ls)
     }
 
     if (input$pickSuperAS == "Any") {
