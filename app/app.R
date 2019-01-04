@@ -534,7 +534,11 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$submitMonsterId, {
-    monFlt$Id <- as.integer(input$monsterId)
+    if (!as.integer(input$monsterId) %in% Monster.dt$MonsterId) {
+      sendSweetAlert(session = session, title = "No monster with this ID exists")
+    } else {
+      monFlt$Id <- as.integer(input$monsterId)
+    }
   })
 
   output$monsterFiltered <- renderUI(
