@@ -166,7 +166,7 @@ ui <- fluidPage (
         ),
 
         div(
-          style = "display: flex; flex-wrap: wrap; padding-top:30px",
+          style = "display: flex; flex-wrap: wrap; padding-top:10px",
           div(
             actionButton(
               inputId = "submitFilters",
@@ -181,14 +181,25 @@ ui <- fluidPage (
               inputId = "resetFilters",
               label = "Reset"
             )
-          ),
+          )
+        ),
+
+        div(
+          style = "display: flex; flex-wrap: wrap; padding-top:10px",
           div(
-            style = "padding-left:10px; margin-top:-20px;",
             pickerInput(
               inputId = "ordering",
               label = "Sort Results by",
               choices = c("ID" = "MonsterId",
                 "HP" = "Hp", "ATK" = "Atk", "RCV" = "Rec", "Weighted"= "Weighted")
+            )
+          ),
+          div(
+            style = "padding-left:10px;",
+            pickerInput(
+              inputId = "showTopN",
+              label = "Show Results",
+              choices = c("Top 10" = 10, "Top 50" = 50, "Top 100" = 100, "All" = 10000)
             )
           )
         )
@@ -542,7 +553,7 @@ server <- function(input, output, session) {
 
   observeEvent(input$submitMonsterId, {
     if (!as.integer(input$monsterId) %in% Monster.dt$MonsterId) {
-      sendSweetAlert(session = session, text = "No monster with this ID exists", title = "")
+      sendSweetAlert(session = session, text = "Monster ID does not exist", title = "")
     } else {
       monFlt$Id <- as.integer(input$monsterId)
     }
@@ -563,7 +574,9 @@ server <- function(input, output, session) {
         radioGroupButtons(
           inputId = "selectMonster",
           label = "",
-          choices = getMonsterChoices(Monster.dt[MonsterId %in% monFlt$Id][order(-get(input$ordering))]),
+          choices = getMonsterChoices(
+            Monster.dt[MonsterId %in% monFlt$Id][order(-get(input$ordering))][1:min(length(monFlt$Id), as.integer(input$showTopN))]
+          ),
           status = "monster"
         )
       )
