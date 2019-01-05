@@ -191,7 +191,8 @@ ui <- fluidPage (
               inputId = "ordering",
               label = "Sort Results by",
               choices = c("ID" = "MonsterId",
-                "HP" = "Hp", "ATK" = "Atk", "RCV" = "Rec", "Weighted"= "Weighted")
+                "HP (LvMax)" = "Hp", "ATK (LvMax)" = "Atk", "RCV (LvMax)" = "Rec", "Weighted (LvMax)" = "Weighted",
+                "HP (inc. Lv110)" = "HpAll", "ATK (inc. Lv110)" = "AtkAll", "RCV (inc. Lv110)" = "RecAll", "Weighted (inc. Lv110)" = "WeightedAll")
             )
           ),
           div(
@@ -199,7 +200,8 @@ ui <- fluidPage (
             pickerInput(
               inputId = "showTopN",
               label = "Show Results",
-              choices = c("Top 10" = 10, "Top 50" = 50, "Top 100" = 100, "All" = 10000)
+              choices = c("Top 10" = 10, "Top 50" = 50, "Top 100" = 100, "All" = 10000),
+              selected = 50
             )
           )
         )
@@ -255,6 +257,11 @@ server <- function(input, output, session) {
 
   Monster.dt[, Weighted := Hp/10 + Atk/5 + Rec/3]
   Monster.dt[, Weighted110 := Hp110/10 + Atk110/5 + Rec110/3]
+
+  Monster.dt[, HpAll := pmax(Hp, Hp110, na.rm = T)]
+  Monster.dt[, AtkAll := pmax(Atk, Atk110, na.rm = T)]
+  Monster.dt[, RecAll := pmax(Rec, Rec110, na.rm = T)]
+  Monster.dt[, WeightedAll := pmax(Weighted, Weighted110, na.rm = T)]
 
   Attribute.dt[, LinkHtml := paste0("<img src=img/Attribute/", Id, ".png height='18' width='18'>")]
 
