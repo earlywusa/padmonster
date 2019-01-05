@@ -11,7 +11,8 @@ class PadMonster(scrapy.spiders.Spider):
     # allowed_domains = ["douban.com"]
     allowed_domains = ["pad.skyozora.com"]
     # except 207, 4385
-    start_urls = ["http://pad.skyozora.com/pets/5035"]
+
+    start_urls = ["http://pad.skyozora.com/pets/3274"]
     count = 1
     def parse(self, response):
         index = response.url.split("/")[-1]
@@ -211,7 +212,7 @@ class PadMonster(scrapy.spiders.Spider):
         count = index+1
         # count = 4284
 
-        if count < 5050:
+        if count < 3275:
             nextLink = "http://pad.skyozora.com/pets/" + str(count)
             print(nextLink)
             yield Request(urljoin(response.url, nextLink), callback = self.parse)
