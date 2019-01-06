@@ -2,7 +2,11 @@ rm(list=ls())
 library(data.table)
 library(DBI)
 
-setwd("//Users/yawenliang/Documents/PadMonster")
+if (Sys.info()[["nodename"]] == "JUTONG-X1C") {
+  setwd("C:/Users/Jutong/Documents/padmonster")
+} else {
+  setwd("//Users/yawenliang/Documents/PadMonster")
+}
 
 conn <- dbConnect(drv = RSQLite::SQLite(), "db/padmonster.sqlite3")
 Monster.db <- dbReadTable(conn, "Monster")
