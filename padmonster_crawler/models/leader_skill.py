@@ -5,6 +5,17 @@ class LeaderSkill(object):
         self.type = item["leader_skill_type"]
         self.description = item["leader_skill_description"]
 
+    def getSkillId(self, monster, handler):
+        id = None
+        if self.name != "" and self.name in handler.leaderSkillDic:
+            id = handler.leaderSkillDic.get(self.name)
+        else:
+            sql = "select LeaderSkillId from LeaderSkill where LeaderSkillName = '" + self.name +"';"
+            rows = handler.query(sql)
+            id = rows[0]
+        return id
+
+
     def insertSkill(self, monster, handler):
         id = None
         if self.name != "":

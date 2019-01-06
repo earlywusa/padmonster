@@ -18,13 +18,14 @@ items.py: item configuration
 
 models/* : model parser and database interaction
 
-
-- DataStructure
-define basic schema for the monsters
-
-- app
-server
-
+#How to specify the monster range to update?
+  ```Bash
+  #change directory to padmonster
+  $ cd padmonster
+  #invoke the application with start_id and end_id, Note: end_id should greater than start_id
+  #for example
+  $ scrapy crawl padmonster -a start_id=1001 -a end_id=5000
+  ```
 
 
 # How to deploy the app to Heroku?
@@ -39,7 +40,7 @@ server
     ```Bash
     # Change the directory below to where to put 'padmonster' as sub-folder
     $ cd C:/Users/jpan/apps/
-    
+
     # Clone to C:/Users/jpan/apps/padmonster
     $ git clone https://github.com/earlywusa/padmonster.git padmonster
     $ cd padmonster

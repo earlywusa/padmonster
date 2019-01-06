@@ -41,7 +41,15 @@ class ActiveSkill(object):
             end = self.description.find('>')
             if start < end:
                 self.description = self.description[0:start] + self.description[end+1: len(self.description)]
-
+    def getSkillId(self, monster, handler):
+        id = None
+        if self.name != "" and self.name in handler.activeSkillDic:
+            id = handler.activeSkillDic.get(self.name)
+        else:
+            sql = "select ActiveSkillId from ActiveSkill where ActiveSkillName = '" + self.name +"';"
+            rows = handler.query(sql)
+            id = rows[0]
+        return id
 
     def insertSkill(self, monster, handler):
         id = None

@@ -65,7 +65,49 @@ class Monster(object):
                 # print("insert type: " + sql)
                 id = handler.insert(sql, obj)
 
+    def update(self, handler):
+        #self.updateTypes(handler) #to be implemented
+        #self.updateAwokenSkills(self, handler) #to be implemented
+        if self.isExist(handler):
+            leaderSkillId = self.leaderSkill.getSkillId(self, handler)
+            activeSkillId = self.activeSkill.getSkillId(self, handler)
+            sql = "update Monster set \
+            Name = ?, \
+            MainAtt = ?, \
+            SubAtt = ?, \
+            LvMax = ?, \
+            Hp = ?, \
+            Atk = ?, \
+            Rec = ?, \
+            Hp110 = ?, \
+            Atk110 = ?, \
+            Rec110 = ?, \
+            ActiveSkillId = ?, \
+            LeaderSkillId = ?, \
+            MonsterIconPathDownload = ? \
+            where MonsterId = ? \
+            "
+            obj = (
+            self.name,
+            self.main_attr,
+            self.sub_attr,
+            self.lvl_max,
+            self.hp_lv_max,
+            self.atk_lv_max,
+            self.rec_lv_max,
+            self.hp_110,
+            self.atk_110,
+            self.rec_110,
+            activeSkillId,
+            leaderSkillId,
+            self.icon_path_download,
+            self.id)
+            handler.update(sql, obj)
+        else:
+            self.insert(handler)
+
     def insert(self, handler):
+        monster_row_id = None
         self.insertTypes(handler)
         self.awokenSkills.insertRelation(self, handler)
 

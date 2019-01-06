@@ -1,9 +1,11 @@
 import scrapy
+import sys
 from scrapy.http import Request
 from scrapy.selector import Selector
 from urllib.parse import urljoin
 from padmonster_crawler.items import PadmonsterItem
 import re
+
 
 class PadMonster(scrapy.spiders.Spider):
     """docstring for RecruitSpider."""
@@ -11,9 +13,18 @@ class PadMonster(scrapy.spiders.Spider):
     # allowed_domains = ["douban.com"]
     allowed_domains = ["pad.skyozora.com"]
     # except 207, 4385
-
-    start_urls = ["http://pad.skyozora.com/pets/3274"]
+    start_id = 1
+    end_id = 5050
+    start_urls = ["http://pad.skyozora.com/pets/1"]
     count = 1
+    def __init__(self, start_id=1, end_id=10):
+        if int(end_id) < int(start_id):
+            sys.exit("Invalid start_id: " + start_id + " end_id: " + end_id)
+        self.start_id = int(start_id)
+        self.end_id = int(end_id)
+        start_url = "http://pad.skyozora.com/pets/"+ str(start_id)
+        self.start_urls = [start_url]
+
     def parse(self, response):
         index = response.url.split("/")[-1]
         if type(index) == str:
@@ -62,6 +73,7 @@ class PadMonster(scrapy.spiders.Spider):
                 monster = monsters_table[1]
                 lv_max_status = monster.xpath('tr[2]/td[2]/table/tr/td/text()').extract()
                 if len(lv_max_status) > 0:
+                    # print("lvl max status: ")
                     # print(lv_max_status)
                     max_lvl = lv_max_status[0].split(".")[1]
                     hp_lv_max = lv_max_status[1].split(": ")[1]
@@ -71,7 +83,13 @@ class PadMonster(scrapy.spiders.Spider):
                     item["hp_lv_max"] = hp_lv_max
                     item["atk_lv_max"] = atk_lv_max
                     item["rec_lv_max"] = rec_lv_max
+                # lv_110_status = monster.xpath('tr[4]/td[2]/table/tr/td/text()').extract()
                 lv_110_status = monster.xpath('tr[4]/td[2]/table/tr/td/text()').extract()
+                print("lvl 110 max status: ")
+                print(lv_110_status)
+                item["hp_110"] = None
+                item["atk_110"] = None
+                item["rec_110"] = None
                 if len(lv_110_status) > 0:
                     hp_110 = lv_110_status[1].split(": ")[1]
                     atk_110 = lv_110_status[2].split(": ")[1]
@@ -80,9 +98,18 @@ class PadMonster(scrapy.spiders.Spider):
                     item["atk_110"] = atk_110
                     item["rec_110"] = rec_110
                 else:
-                    item["hp_110"] = None
-                    item["atk_110"] = None
-                    item["rec_110"] = None
+                    lv_110_status = monster.xpath('tr[td[contains(text(),"等級界限突破")]]')
+                    if lv_110_status != None:
+                        print(lv_110_status)
+                        lv_110_status = lv_110_status.xpath('td[2]/table/tr[1]/td/text()').extract()
+                        if len(lv_110_status) > 0:
+                            hp_110 = lv_110_status[1].split(": ")[1]
+                            atk_110 = lv_110_status[2].split(": ")[1]
+                            rec_110 = lv_110_status[3].split(": ")[1]
+                            item["hp_110"] = hp_110
+                            item["atk_110"] = atk_110
+                            item["rec_110"] = rec_110
+
             if monsters_table[3] != None:
                 monster = monsters_table[3]
                 active_skill_name = monster.xpath('tr[1]/td[1]/a/span/text()').extract()
@@ -211,8 +238,16 @@ class PadMonster(scrapy.spiders.Spider):
 
         count = index+1
         # count = 4284
+        #3270 hadis , 110 available
+        #3274 little white dog, 110 unavailable
 
-        if count < 3275:
+        #debug
+        # nextLink = "http://pad.skyozora.com/pets/3270"
+        # print(nextLink)
+        # yield Request(urljoin(response.url, nextLink), callback = self.parse)
+
+
+        if count <= self.end_id:
             nextLink = "http://pad.skyozora.com/pets/" + str(count)
             print(nextLink)
             yield Request(urljoin(response.url, nextLink), callback = self.parse)

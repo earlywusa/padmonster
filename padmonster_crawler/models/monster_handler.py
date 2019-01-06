@@ -65,11 +65,14 @@ class MonsterHandler(object):
         self.conn.commit()
         return last_id
 
-
+    def update(self, sql, obj):
+        cur = self.conn.cursor()
+        cur.execute(sql, obj)
+        self.conn.commit()
 
     def processMonster(self, monster):
         try:
-            lastRowId = monster.insert(self)
+            lastRowId = monster.update(self)
         except Error as e:
             print("error message: ")
             exc_type, exc_value, exc_tb = sys.exc_info()
