@@ -84,3 +84,41 @@ models/* : model parser and database interaction
     $ heroku open
     ```
     or go to http://myapp.herokuapp.com in your browser (replacing *myapp* by the name of your app).
+
+
+# How to deploy the app with Shiny Server setup on a Linux (Ubuntu 14.04+) server?
+
+1. Install R. The procedure provided in http://cran.rstudio.com/bin/linux/ubuntu/README.html is **incomplete**. One important step is missing. The correct procedure is available at https://www.digitalocean.com/community/tutorials/how-to-install-r-on-ubuntu-16-04-2.
+
+2. Install Shiny package with sudo.
+    ```Bash
+    $ sudo R
+    ```
+    ```R
+    > install.packages("shiny")
+    > q()
+    ```
+
+3. Install Shiny server. Follow the last step in https://www.rstudio.com/products/shiny/download-server/. As of 2019-01-07, this is done by
+    ```Bash
+    $ sudo apt-get install gdebi-core
+    $ wget https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-1.5.9.923-amd64.deb
+    $ sudo gdebi shiny-server-1.5.9.923-amd64.deb
+    ```
+    After installation, you can go to http://<your server's public ip>:3838 in the browser to check whether Shiny server is up and running.
+
+4. Install packages used in the app. Check the `library` calls in the header of app/app.R to see what packages are required. As of 2019-01-07, you will run
+    ```Bash
+    $ sudo R
+    ```
+    ```R
+    > install.packages(c("data.table", "shinyWidgets", "DBI", "RSQLite"))
+    > q()
+    ```
+
+5. The easiest way to deploy the app would be
+    ```Bash
+    $ cd /srv/shiny-server/
+    $ sudo git clone https://github.com/earlywusa/padmonster.git padmonster
+    ```
+    You should then be able to access the app at http://<your server's public ip>:3838/padmonster. For customization of app location, port, etc., see [Shiny Server configuration guide](https://docs.rstudio.com/shiny-server/).
