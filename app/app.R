@@ -772,6 +772,7 @@ server <- function(input, output, session) {
                   colspan = "5",
                   tags$a(
                     href = paste0("http://pad.skyozora.com/pets/", monSel$MonsterId),
+                    target = "_blank",
                     "戰友網"
                   )
                 )
