@@ -531,7 +531,7 @@ server <- function(input, output, session) {
     }
 
     if (is.null(selectedAwokenSkills$Id)) {
-      monIdFltByAwkSkl <- Monster.dt$MonsterId
+      monIdFltByAwkSkl <- monIdFltByAwkSklIncOneSup <- Monster.dt$MonsterId
     } else {
       monIdFltByAwkSkl.ls <- lapply(
         unique(selectedAwokenSkills$Id),
