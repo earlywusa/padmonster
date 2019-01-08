@@ -111,6 +111,15 @@ ui <- fluidPage (
             )
           ),
           div(
+            style = "padding-left:10px; padding-top:7px;",
+            materialSwitch(
+              inputId = "toggleIncludeSuperAwoken",
+              label = tags$b("Inc. Super"),
+              value = T,
+              status = "primary"
+            )
+          ),
+          div(
             style = "padding-left:10px;",
             actionButton(
               inputId = "toggleAwokenSkillList",
@@ -131,16 +140,16 @@ ui <- fluidPage (
           )
         ),
 
-        div(
-          style = "display:flex; flex-wrap:wrap; padding-top:5px;",
-          pickerInput(
-            inputId = "pickSuperAS",
-            label = "Super Awoken Skill",
-            choices = "",
-            options = pickerOptions(noneSelectedText = "None"),
-            width = "fit"
-          )
-        ),
+        # div(
+        #   style = "display:flex; flex-wrap:wrap; padding-top:5px;",
+        #   pickerInput(
+        #     inputId = "pickSuperAS",
+        #     label = "Super Awoken Skill",
+        #     choices = "",
+        #     options = pickerOptions(noneSelectedText = "None"),
+        #     width = "fit"
+        #   )
+        # ),
 
         div(
           style = "display:flex; flex-wrap:wrap; align-items:center;",
@@ -399,17 +408,17 @@ server <- function(input, output, session) {
     size = "sm"
   )
 
-  allSuperASId <- AwokenSkillRelation.dt[SuperAwoken==1, sort(unique(AwokenSkillId))]
+  # allSuperASId <- AwokenSkillRelation.dt[SuperAwoken==1, sort(unique(AwokenSkillId))]
 
-  updatePickerInput(
-    session = session,
-    inputId = "pickSuperAS",
-    choices = c("Any", allSuperASId),
-    choicesOpt = list(
-      content = sprintf(c("Any", AwokenSkill.dt[AwokenSkillId %in% allSuperASId, LinkHtml]))
-    ),
-    selected = "Any"
-  )
+  # updatePickerInput(
+  #   session = session,
+  #   inputId = "pickSuperAS",
+  #   choices = c("Any", allSuperASId),
+  #   choicesOpt = list(
+  #     content = sprintf(c("Any", AwokenSkill.dt[AwokenSkillId %in% allSuperASId, LinkHtml]))
+  #   ),
+  #   selected = "Any"
+  # )
 
   allActiveSkillTypes <- ActiveSkillType.dt[, sort(unique(ActiveSkillType))]
   # sortByStringLength <- function(v) v[order(nchar(v))]
@@ -484,11 +493,11 @@ server <- function(input, output, session) {
 
     clearSelectedAwokenSkills()
 
-    updatePickerInput(
-      session = session,
-      inputId = "pickSuperAS",
-      selected = "Any"
-    )
+    # updatePickerInput(
+    #   session = session,
+    #   inputId = "pickSuperAS",
+    #   selected = "Any"
+    # )
 
   })
 
@@ -530,13 +539,25 @@ server <- function(input, output, session) {
       )
 
       monIdFltByAwkSkl <- Reduce(intersect, monIdFltByAwkSkl.ls)
+
+      monIdFltByAllAwkSkl.ls <- lapply(
+        unique(selectedAwokenSkills$Id),
+        function(x) AwokenSkillRelation.dt[, sum(AwokenSkillId==x)>=sum(selectedAwokenSkills$Id==x), by = MonsterId][V1==TRUE, MonsterId]
+      )
+
+      monIdFltByAllAwkSkl <- Reduce(intersect, monIdFltByAllAwkSkl.ls)
+
+      monIdDiffBySupAwkSkl.vt <- as.vector(unlist(mapply(setdiff, monIdFltByAllAwkSkl.ls, monIdFltByAwkSkl.ls)))
+      monIdDiffByMoreThanOneSupAwkSkl <- data.table(V1 = monIdDiffBySupAwkSkl.vt)[, .N, by = V1][N>1, V1]
+
+      monIdFltByAwkSklIncOneSup <- setdiff(monIdFltByAllAwkSkl, monIdDiffByMoreThanOneSupAwkSkl)
     }
 
-    if (input$pickSuperAS == "Any") {
-      monIdFltBySuperAS <- Monster.dt$MonsterId
-    } else {
-      monIdFltBySuperAS <- AwokenSkillRelation.dt[SuperAwoken == 1 & AwokenSkillId == input$pickSuperAS, MonsterId]
-    }
+    # if (input$pickSuperAS == "Any") {
+    #   monIdFltBySuperAS <- Monster.dt$MonsterId
+    # } else {
+    #   monIdFltBySuperAS <- AwokenSkillRelation.dt[SuperAwoken == 1 & AwokenSkillId == input$pickSuperAS, MonsterId]
+    # }
 
     if (length(input$selectActiveSkillTypes)==0) {
       monIdFltByASType <- Monster.dt$MonsterId
@@ -548,8 +569,12 @@ server <- function(input, output, session) {
     monFlt$Id <- Reduce(intersect, list(
       monIdFltByMainAtt,
       monIdFltBySubAtt,
-      monIdFltByAwkSkl,
-      monIdFltBySuperAS,
+      if (input$toggleIncludeSuperAwoken==T) {
+        monIdFltByAwkSklIncOneSup
+      } else {
+        monIdFltByAwkSkl
+      },
+      # monIdFltBySuperAS,
       monIdFltByType,
       monIdFltByASType
     ))
