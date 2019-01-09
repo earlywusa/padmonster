@@ -1,11 +1,13 @@
 library(data.table)
 library(shiny)
+library(shinythemes)
 library(shinyWidgets)
 library(DBI)
 library(RSQLite)
 
 
 ui <- fluidPage (
+  theme = shinytheme("slate"),
 
   tags$head(
     tags$style(HTML("
@@ -116,7 +118,7 @@ ui <- fluidPage (
               inputId = "toggleIncludeSuperAwoken",
               label = tags$b("Inc. Super"),
               value = T,
-              status = "primary"
+              status = "info"
             )
           ),
           div(
@@ -670,7 +672,7 @@ server <- function(input, output, session) {
       monSel <- monData.dt[MonsterId == input$selectMonster]
       tagList(
         wellPanel(
-          style = "background:azure;",
+          # style = "background:azure;",
           div(
             style = "display:flex; flex-wrap:wrap;",
             div(
