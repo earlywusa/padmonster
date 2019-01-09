@@ -93,10 +93,13 @@ ui <- fluidPage (
       tabPanel(
         title = "Search by Filtering",
 
-        radioGroupButtons(
-          inputId = "selectMainAtt",
-          label = "Main Attribute",
-          choices = ""
+        div(
+          style = "padding-top: 10px;",
+          radioGroupButtons(
+            inputId = "selectMainAtt",
+            label = "Main Attribute",
+            choices = ""
+          )
         ),
         radioGroupButtons(
           inputId = "selectSubAtt",
