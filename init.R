@@ -1,7 +1,7 @@
 # init.R
 # install packages
 
-my_packages = c("data.table", "shinyWidgets", "DBI", "RSQLite")
+my_packages = c("data.table", "shinyWidgets", "DBI", "RSQLite", "shinythemes")
 
 install_if_missing = function(p) {
   if (p %in% rownames(installed.packages()) == FALSE) {
