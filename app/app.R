@@ -29,9 +29,22 @@ ui <- fluidPage (
       }
 
       td, th {
-        border: 1px solid #dddddd;
+        border: 1px solid rgb(0,0,0);
         text-align: center;
         padding: 3px;
+      }
+
+      table tr:first-child td {
+        border-top: 0;
+      }
+      table tr td:first-child {
+        border-left: 0;
+      }
+      table tr:last-child td {
+        border-bottom: 0;
+      }
+      table tr td:last-child {
+        border-right: 0;
       }
 
       .state {
@@ -721,7 +734,7 @@ server <- function(input, output, session) {
           div(
             style = "display:flex; margin-top:-10px;",
             tags$table(
-              style = "width: 305px;",
+              style = "width: 304px;",
               tags$tr(
                 tags$td(
                   tags$b("主動技能")
@@ -770,7 +783,7 @@ server <- function(input, output, session) {
                   "外部鏈接"
                 ),
                 tags$td(
-                  style = "text-align: left;",
+                  style = "text-align: left; padding-left: 10px;",
                   colspan = "5",
                   tags$a(
                     href = paste0("http://pad.skyozora.com/pets/", monSel$MonsterId),
