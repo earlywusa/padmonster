@@ -517,6 +517,12 @@ server <- function(input, output, session) {
     #   selected = "Any"
     # )
 
+    updatePrettyCheckboxGroup(
+      session = session,
+      inputId = "selectActiveSkillTypes",
+      selected = character(0)
+    )
+
   })
 
 
@@ -537,7 +543,7 @@ server <- function(input, output, session) {
     if (input$selectSubAtt == "Any") {
       monIdFltBySubAtt <- Monster.dt$MonsterId
     } else if (input$selectSubAtt == "None") {
-      monIdFltBySubAtt <- Monster.dt[SubAtt == "", MonsterId]
+      monIdFltBySubAtt <- Monster.dt[is.na(SubAtt), MonsterId]
     } else {
       monIdFltBySubAtt <- Monster.dt[SubAtt == input$selectSubAtt, MonsterId]
     }
