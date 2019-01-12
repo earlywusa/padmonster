@@ -213,13 +213,14 @@ class PadMonster(scrapy.spiders.Spider):
                     item["leader_skill_type"] = ls_type
                 else:
                     item["leader_skill_type"] = None
-                leader_skill_description = monster.xpath('tr[2]/td/text()').extract()
-                item["leader_skill_description"] = None
-                if len(leader_skill_description) > 0:
-                    print(leader_skill_description)
-                    leader_skill_description_str = "".join(leader_skill_description).strip()
-                    if leader_skill_description_str != "":
-                        item["leader_skill_description"] = leader_skill_description_str
+                leader_skill_description = monster.xpath('tr[2]/td').extract()
+                print(leader_skill_description)
+                item["leader_skill_description"] = leader_skill_description[0]
+                # if len(leader_skill_description) > 0:
+                #     print(leader_skill_description)
+                #     leader_skill_description_str = "".join(leader_skill_description).strip()
+                #     if leader_skill_description_str != "":
+                #         item["leader_skill_description"] = leader_skill_description_str
 
             #icon_path_download
             # icon_path_download = selector.xpath('link[@rel="image_src"]/@href').extract()

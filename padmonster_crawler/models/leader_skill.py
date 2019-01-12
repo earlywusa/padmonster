@@ -4,6 +4,14 @@ class LeaderSkill(object):
         self.name = item["leader_skill_name"]
         self.type = item["leader_skill_type"]
         self.description = item["leader_skill_description"]
+        self.processLeaderSkillDescription()
+
+    def processLeaderSkillDescription(self):
+        while self.description.find('<') >= 0 and self.description.find('>') >= 0:
+            start = self.description.find('<')
+            end = self.description.find('>')
+            if start < end:
+                self.description = self.description[0:start] + self.description[end+1: len(self.description)]
 
     def getSkillId(self, monster, handler):
         id = None
