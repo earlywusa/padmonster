@@ -218,8 +218,8 @@ ui <- fluidPage (
               inputId = "ordering",
               label = "Sort Results by",
               choices = c("ID" = "MonsterId",
-                "HP (LvMax)" = "Hp", "ATK (LvMax)" = "Atk", "RCV (LvMax)" = "Rec", "Weighted (LvMax)" = "Weighted",
-                "HP (inc. Lv110)" = "HpAll", "ATK (inc. Lv110)" = "AtkAll", "RCV (inc. Lv110)" = "RecAll", "Weighted (inc. Lv110)" = "WeightedAll")
+                "HP (LvMax)" = "Hp", "ATK (LvMax)" = "Atk", "RCV (LvMax)" = "Rcv", "Weighted (LvMax)" = "Weighted",
+                "HP (inc. Lv110)" = "HpAll", "ATK (inc. Lv110)" = "AtkAll", "RCV (inc. Lv110)" = "RcvAll", "Weighted (inc. Lv110)" = "WeightedAll")
             )
           ),
           div(
@@ -280,14 +280,14 @@ server <- function(input, output, session) {
     assign(paste0(table, ".dt"), setDT(dbReadTable(con, table)))
   }
 
-  Monster.dt[, LinkHtml := paste0("<img src=img/MonsterIcon/", MonsterId, ".png title=", Name, " height='47' width='47'>")]
+  Monster.dt[, LinkHtml := paste0("<img src=img/MonsterIcon/", MonsterId, ".png title=", CnName, " height='47' width='47'>")]
 
-  Monster.dt[, Weighted := Hp/10 + Atk/5 + Rec/3]
-  Monster.dt[, Weighted110 := Hp110/10 + Atk110/5 + Rec110/3]
+  Monster.dt[, Weighted := Hp/10 + Atk/5 + Rcv/3]
+  Monster.dt[, Weighted110 := Hp110/10 + Atk110/5 + Rcv110/3]
 
   Monster.dt[, HpAll := pmax(Hp, Hp110, na.rm = T)]
   Monster.dt[, AtkAll := pmax(Atk, Atk110, na.rm = T)]
-  Monster.dt[, RecAll := pmax(Rec, Rec110, na.rm = T)]
+  Monster.dt[, RcvAll := pmax(Rcv, Rcv110, na.rm = T)]
   Monster.dt[, WeightedAll := pmax(Weighted, Weighted110, na.rm = T)]
 
   Attribute.dt[, LinkHtml := paste0("<img src=img/Attribute/", Id, ".png height='18' width='18'>")]
@@ -296,39 +296,6 @@ server <- function(input, output, session) {
 
   Type.dt[, LinkHtml := paste0("<img src=img/Type/", TypeId, ".png height='20' width='20'>")]
   Type.dt[, LinkHtmlL := paste0("<img src=img/Type/", TypeId, ".png height='23' width='23'>")]
-
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "火珠", replacement = "<img src=img/Orb/Fire.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "水珠", replacement = "<img src=img/Orb/Water.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "木珠", replacement = "<img src=img/Orb/Wood.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "光珠", replacement = "<img src=img/Orb/Light.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "暗珠", replacement = "<img src=img/Orb/Dark.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "心珠", replacement = "<img src=img/Orb/Heart.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "毒珠", replacement = "<img src=img/Orb/Poison.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "火\\+珠", replacement = "<img src=img/Orb/Fire+.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "水\\+珠", replacement = "<img src=img/Orb/Water+.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "木\\+珠", replacement = "<img src=img/Orb/Wood+.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "光\\+珠", replacement = "<img src=img/Orb/Light+.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "暗\\+珠", replacement = "<img src=img/Orb/Dark+.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "心\\+珠", replacement = "<img src=img/Orb/Heart+.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "毒\\+珠", replacement = "<img src=img/Orb/Poison+.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "死珠", replacement = "<img src=img/Orb/Dead.png  height='19' width='19'>")]
-  ActiveSkill.dt[, ActiveSkillDescription := gsub(x = ActiveSkillDescription,
-    pattern = "炸彈珠", replacement = "<img src=img/Orb/Bomb.png  height='19' width='19'>")]
 
   ActiveSkillType.dt[ActiveSkillType=="傷害吸收無效化", ActiveSkillType := "大傷吸收無效"]
   ActiveSkillType.dt[, ActiveSkillType := sub("傷害增幅", "增加傷害", ActiveSkillType)]
@@ -641,8 +608,8 @@ server <- function(input, output, session) {
 
 
   monData.dt <-
-    Monster.dt[, .(MonsterId, Name, MainAtt, SubAtt,
-      LvMax, Hp, Atk, Rec, Hp110, Atk110, Rec110, Weighted, Weighted110, ActiveSkillId, LeaderSkillId)]
+    Monster.dt[, .(MonsterId, CnName, MainAtt, SubAtt,
+      LvMax, Hp, Atk, Rcv, Hp110, Atk110, Rcv110, Weighted, Weighted110, ActiveSkillId, LeaderSkillId)]
 
   monData.dt <- merge(monData.dt, ActiveSkill.dt, by = "ActiveSkillId", all.x = T)
 
@@ -708,7 +675,7 @@ server <- function(input, output, session) {
               style = "align-self:center; padding-left:5px; padding-top:5px;",
               tags$b(
                 style = "font-size:15px;",
-                paste0("No.", monSel$MonsterId, " - ", monSel$Name)
+                paste0("No.", monSel$MonsterId, " - ", monSel$CnName)
               ),
               div(
                 style = "padding-top:5px;",
@@ -732,7 +699,7 @@ server <- function(input, output, session) {
                 Lv = c(monSel$LvMax, 110L),
                 HP = c(monSel$Hp, monSel$Hp110),
                 ATK = c(monSel$Atk, monSel$Atk110),
-                RCV = c(monSel$Rec, monSel$Rec110),
+                RCV = c(monSel$Rcv, monSel$Rcv110),
                 Weighted = c(monSel$Weighted, monSel$Weighted110)
               )
             },
@@ -784,7 +751,7 @@ server <- function(input, output, session) {
                 tags$td(
                   style = "text-align: left; font-size: 13px;",
                   colspan = "6",
-                  wuIfNA(monSel$LeaderSkillDescription)
+                  HTML(wuIfNA(monSel$LeaderSkillDescription))
                 )
               ),
               tags$tr(
