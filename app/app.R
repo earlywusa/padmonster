@@ -297,6 +297,9 @@ server <- function(input, output, session) {
   Type.dt[, LinkHtml := paste0("<img src=img/Type/", TypeId, ".png height='20' width='20'>")]
   Type.dt[, LinkHtmlL := paste0("<img src=img/Type/", TypeId, ".png height='23' width='23'>")]
 
+  LeaderSkill.dt[, LeaderSkillDescription := gsub(x = LeaderSkillDescription,
+    pattern = '<img src="images/.*>', replacement = '')]
+
   ActiveSkillType.dt[ActiveSkillType=="傷害吸收無效化", ActiveSkillType := "大傷吸收無效"]
   ActiveSkillType.dt[, ActiveSkillType := sub("傷害增幅", "增加傷害", ActiveSkillType)]
   ActiveSkillType.dt[ActiveSkillType=="全場攻擊", ActiveSkillType := "全體攻擊"]
