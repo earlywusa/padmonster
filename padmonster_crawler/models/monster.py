@@ -69,6 +69,7 @@ class Monster(object):
         #self.updateTypes(handler) #to be implemented
         #self.updateAwokenSkills(self, handler) #to be implemented
         if self.isExist(handler):
+            self.leaderSkill.insertSkill(self, handler)
             leaderSkillId = self.leaderSkill.getSkillId(self, handler)
             activeSkillId = self.activeSkill.getSkillId(self, handler)
             sql = "update Monster set \

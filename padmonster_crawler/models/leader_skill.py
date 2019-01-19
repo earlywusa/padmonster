@@ -4,7 +4,7 @@ class LeaderSkill(object):
         self.name = item["leader_skill_name"]
         self.type = item["leader_skill_type"]
         self.description = item["leader_skill_description"]
-        self.processLeaderSkillDescription()
+        # self.processLeaderSkillDescription()
 
     def processLeaderSkillDescription(self):
         while self.description.find('<') >= 0 and self.description.find('>') >= 0:
@@ -23,10 +23,14 @@ class LeaderSkill(object):
             id = rows[0]
         return id
 
+    def updateSkill(self, monster, handler, id):
+        sql = "update LeaderSkill set LeaderSkillDescription = ? where LeaderSkillId = ?;"
+        handler.update(sql, (self.description, id))
+
 
     def insertSkill(self, monster, handler):
         id = None
-        if self.name != "":
+        if self.name != "" and self.name is not None:
             if self.name not in handler.leaderSkillDic:
                 sql = "insert into LeaderSkill ( \
                 LeaderSkillName, \
@@ -43,8 +47,7 @@ class LeaderSkill(object):
                     values (?,?)"
                     obj = (id, self.type)
                     handler.insert(sql, obj)
-
-                return id
             else:
                 id = handler.leaderSkillDic.get(self.name)
+                self.updateSkill(monster, handler, id)
         return id
